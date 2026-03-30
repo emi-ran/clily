@@ -53,6 +53,7 @@ npm run dev -- --help
 - run/cancel prompt
 - `config show`
 - `config path`
+- `config doctor`
 - `config set <path> <value>`
 - `safety allow|warn|deny list|add|remove`
 - encrypted provider secret storage

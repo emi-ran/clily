@@ -1,9 +1,22 @@
 import fs from "node:fs/promises";
 import { defaultConfig } from "./defaults.js";
-import { getConfigDir, getConfigPath } from "./paths.js";
+import { getConfigDir, getConfigPath, getSecretsPath } from "./paths.js";
 import { getProviderApiKey, setProviderApiKey } from "./secrets.js";
 import { configSchema } from "./schema.js";
 import type { ClilyConfig } from "../types.js";
+
+export interface ConfigDoctorReport {
+  configPath: string;
+  secretsPath: string;
+  configFileExists: boolean;
+  secretsFileExists: boolean;
+  configIsValid: boolean;
+  plaintextApiKeyInConfig: boolean;
+  providerName?: ClilyConfig["provider"]["name"];
+  providerModel?: string;
+  apiKeyConfigured: boolean;
+  issues: string[];
+}
 
 type ConfigPathKey =
   | "mode"
@@ -22,6 +35,56 @@ export async function configExists(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export async function inspectConfigDoctor(): Promise<ConfigDoctorReport> {
+  const configPath = getConfigPath();
+  const secretsPath = getSecretsPath();
+  const configFileExists = await fileExists(configPath);
+  const secretsFileExists = await fileExists(secretsPath);
+  const report: ConfigDoctorReport = {
+    configPath,
+    secretsPath,
+    configFileExists,
+    secretsFileExists,
+    configIsValid: false,
+    plaintextApiKeyInConfig: false,
+    apiKeyConfigured: false,
+    issues: []
+  };
+
+  if (!configFileExists) {
+    report.issues.push("Config file is missing. Run `clily setup` first.");
+    return report;
+  }
+
+  try {
+    const raw = await fs.readFile(configPath, "utf8");
+    const parsedJson = JSON.parse(raw) as { provider?: { apiKey?: unknown; name?: unknown; model?: unknown } };
+    report.plaintextApiKeyInConfig = parsedJson.provider?.apiKey !== undefined;
+
+    if (report.plaintextApiKeyInConfig) {
+      report.issues.push("Plaintext provider.apiKey was found in config.json. Remove it and store the key with `clily config set provider.apiKey <value>` or rerun setup.");
+    }
+
+    const parsed = configSchema.parse(parsedJson);
+    report.configIsValid = true;
+    report.providerName = parsed.provider.name;
+    report.providerModel = parsed.provider.model;
+
+    try {
+      report.apiKeyConfigured = Boolean(await getProviderApiKey(parsed.provider.name));
+      if (!report.apiKeyConfigured) {
+        report.issues.push(`No encrypted API key is stored for provider ${parsed.provider.name}. Run \`clily config set provider.apiKey <value>\` or rerun setup.`);
+      }
+    } catch (error) {
+      report.issues.push(error instanceof Error ? error.message : String(error));
+    }
+  } catch (error) {
+    report.issues.push(error instanceof Error ? error.message : String(error));
+  }
+
+  return report;
 }
 
 export async function loadConfig(): Promise<ClilyConfig> {
@@ -179,4 +242,13 @@ async function attachProviderApiKey(config: ClilyConfig): Promise<ClilyConfig> {
 async function writeConfigFile(config: ClilyConfig): Promise<void> {
   await fs.mkdir(getConfigDir(), { recursive: true });
   await fs.writeFile(getConfigPath(), `${JSON.stringify(config, null, 2)}\n`, "utf8");
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
 }

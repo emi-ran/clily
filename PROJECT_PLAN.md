@@ -155,6 +155,7 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-31 | OpenCode | Added user-friendly provider error mapping so malformed JSON, auth issues, rate limits, and network failures show readable CLI messages. |
 | 2026-03-31 | OpenCode | Moved provider API keys out of `config.json` into an encrypted local secrets file and added a first automated test suite with `npm run test`. |
 | 2026-03-31 | OpenCode | Removed plaintext API key fallback from `config.json`; config loading now requires encrypted secret storage only. |
+| 2026-03-31 | OpenCode | Added `clily config doctor` to inspect config health, plaintext key mistakes, and encrypted secret availability. |
 
 ## Notes
 

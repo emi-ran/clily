@@ -4,6 +4,7 @@ import { Command } from "commander";
 import {
   addSafetyPattern,
   configExists,
+  inspectConfigDoctor,
   loadConfig,
   removeSafetyPattern,
   requireConfig,
@@ -11,12 +12,13 @@ import {
 } from "./config/store.js";
 import { getConfigPath } from "./config/paths.js";
 import { detectOsLabel, detectShell } from "./lib/detect.js";
-import { formatConfig, formatSafetyList } from "./lib/format.js";
+import { formatConfig, formatConfigDoctor, formatSafetyList } from "./lib/format.js";
 import { loadHistoryContext } from "./lib/history.js";
 import { generateCommand } from "./lib/provider.js";
 import { printCommandPreview, runCommand, shouldRunCommand } from "./lib/runner.js";
 import { evaluateSafety } from "./lib/safety.js";
 import { loadSessionContext, saveLastExecution } from "./lib/session.js";
+import { formatNotice } from "./lib/ui.js";
 import { runSetup } from "./setup.js";
 import type { ClilyConfig } from "./types.js";
 
@@ -47,8 +49,7 @@ program
   .command("setup")
   .description("Run the interactive setup wizard again")
   .action(async () => {
-    const config = await runSetup();
-    console.log(`Setup complete. Provider model: ${config.provider.model}`);
+    await runSetup();
   });
 
 configCommand
@@ -57,11 +58,19 @@ configCommand
     "",
     "Examples:",
     "  clily config show",
+    "  clily config doctor",
     "  clily config path",
     "  clily config set mode auto",
     "  clily config set privacy.sendHistory false",
     "  clily config set history.historyLimit 5"
   ].join("\n"))
+
+configCommand
+  .command("doctor")
+  .description("Run basic config and secret storage health checks")
+  .action(async () => {
+    console.log(formatConfigDoctor(await inspectConfigDoctor()));
+  });
 
 configCommand
   .command("show")
@@ -74,7 +83,7 @@ configCommand
   .command("path")
   .description("Show where the config file is stored")
   .action(() => {
-    console.log(getConfigPath());
+    console.log(formatNotice("info", getConfigPath()));
   });
 
 configCommand
@@ -84,7 +93,7 @@ configCommand
   .argument("<value>", "New value")
   .action(async (path: string, value: string) => {
     const config = await updateConfigValue(path as Parameters<typeof updateConfigValue>[0], value);
-    console.log(`Updated ${path}`);
+    console.log(formatNotice("success", `Updated ${path}`));
     console.log(formatConfig(config));
   });
 
@@ -110,13 +119,12 @@ program
   .option("--run", "Run the generated command when local safety rules allow it")
   .action(async (requestParts: string[], options: { setup?: boolean; showConfig?: boolean; run?: boolean }) => {
     if (options.showConfig) {
-      console.log(getConfigPath());
+      console.log(formatNotice("info", getConfigPath()));
       return;
     }
 
     if (options.setup || !(await configExists())) {
-      const config = await runSetup();
-      console.log(`Setup complete. Provider model: ${config.provider.model}`);
+      await runSetup();
       return;
     }
 
@@ -138,7 +146,7 @@ program.parseAsync(process.argv).catch((error: unknown) => {
     }
   }
 
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(formatNotice("error", error instanceof Error ? error.message : String(error)));
   process.exitCode = 1;
 });
 
@@ -161,7 +169,7 @@ async function handlePrompt(request: string, forceRun: boolean): Promise<void> {
   printCommandPreview(result, safety);
 
   if (safety.blocked) {
-    console.log(`Blocked: ${safety.reason}`);
+    console.log(formatNotice("error", `Blocked: ${safety.reason}`));
     return;
   }
 
@@ -173,7 +181,7 @@ async function handlePrompt(request: string, forceRun: boolean): Promise<void> {
   });
 
   if (!shouldRun) {
-    console.log("Cancelled.");
+    console.log(formatNotice("warning", "Cancelled."));
     return;
   }
 
@@ -202,7 +210,7 @@ function addSafetyCommands(parent: Command, name: "allow" | "warn" | "deny", key
     .argument("<pattern>", "Pattern to add")
     .action(async (pattern: string) => {
       const config = await addSafetyPattern(key, pattern);
-      console.log(`Added to ${key}: ${pattern}`);
+      console.log(formatNotice("success", `Added to ${key}: ${pattern}`));
       console.log(formatSafetyList(key, config.safety[key]));
     });
 
@@ -212,7 +220,7 @@ function addSafetyCommands(parent: Command, name: "allow" | "warn" | "deny", key
     .argument("<pattern>", "Pattern to remove")
     .action(async (pattern: string) => {
       const config = await removeSafetyPattern(key, pattern);
-      console.log(`Removed from ${key}: ${pattern}`);
+      console.log(formatNotice("success", `Removed from ${key}: ${pattern}`));
       console.log(formatSafetyList(key, config.safety[key]));
     });
 }

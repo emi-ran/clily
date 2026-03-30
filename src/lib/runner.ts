@@ -1,6 +1,8 @@
 import { select } from "@inquirer/prompts";
 import { spawn } from "node:child_process";
+import pc from "picocolors";
 import type { CommandExecutionRecord, GenerateCommandResult, SafetyEvaluation, ShellName } from "../types.js";
+import { formatIndentedBlock, formatKeyValue, formatPanel, formatWrappedValue } from "./ui.js";
 
 function getShellCommand(shell: ShellName): { file: string; args: string[] } {
   switch (shell) {
@@ -22,14 +24,22 @@ function getShellCommand(shell: ShellName): { file: string; args: string[] } {
 }
 
 export function printCommandPreview(result: GenerateCommandResult, safety: SafetyEvaluation): void {
-  console.log(`Command: ${result.command}`);
-  console.log(`Risk: ${result.riskLevel}`);
-  console.log(`Reason: ${result.reason}`);
-  console.log(`Safety: ${safety.match}`);
+  const lines = [
+    pc.dim("Command"),
+    ...formatIndentedBlock(result.command).map((line) => pc.bold(line)),
+    "",
+    formatKeyValue("Shell", pc.white(result.shell)),
+    formatKeyValue("Risk", formatRiskLevel(result.riskLevel)),
+    formatKeyValue("Safety", formatSafetyMatch(safety.match)),
+    ...formatWrappedValue("Why", result.reason)
+  ];
 
   if (result.warnings.length > 0) {
-    console.log(`Warnings: ${result.warnings.join(" | ")}`);
+    lines.push(...formatWrappedValue("Notes", result.warnings.join(" | "), pc.yellow));
   }
+
+  console.log("");
+  console.log(formatPanel("Clily Preview", lines));
 }
 
 export async function shouldRunCommand(options: {
@@ -49,15 +59,39 @@ export async function shouldRunCommand(options: {
   }
 
   const action = await select<string>({
-    message: `Run this command in ${options.shell}?`,
+    message: `${pc.bold("Run in ")}${pc.cyan(options.shell)}${pc.dim("?")}`,
     choices: [
-      { name: "Run", value: "run" },
-      { name: "Cancel", value: "cancel" }
+      { name: pc.green("Run"), value: "run" },
+      { name: pc.red("Cancel"), value: "cancel" }
     ],
     default: safety.shouldConfirm || result.riskLevel !== "low" ? "cancel" : "run"
   });
 
   return action === "run";
+}
+
+function formatRiskLevel(riskLevel: GenerateCommandResult["riskLevel"]): string {
+  switch (riskLevel) {
+    case "low":
+      return pc.green("low");
+    case "medium":
+      return pc.yellow("medium");
+    case "high":
+      return pc.red("high");
+  }
+}
+
+function formatSafetyMatch(match: SafetyEvaluation["match"]): string {
+  switch (match) {
+    case "allowlist":
+      return pc.green("allowlist");
+    case "warnlist":
+      return pc.yellow("warnlist");
+    case "denylist":
+      return pc.red("denylist");
+    case "none":
+      return pc.dim("none");
+  }
 }
 
 export async function runCommand(command: string, shell: ShellName): Promise<CommandExecutionRecord> {

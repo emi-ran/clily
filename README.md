@@ -113,6 +113,7 @@ Show config:
 ```bash
 clily config show
 clily config path
+clily config doctor
 ```
 
 Update config values:
@@ -179,6 +180,7 @@ Current behavior:
 clily --help
 clily config --help
 clily safety --help
+clily config doctor
 npm run test
 ```
 

@@ -1,8 +1,10 @@
 import { confirm, input, password, select } from "@inquirer/prompts";
+import pc from "picocolors";
 import { createConfig, saveConfig } from "./config/store.js";
 import { detectShell } from "./lib/detect.js";
 import { filterGenerateContentModels, listGeminiModels } from "./lib/gemini.js";
 import { filterGroqModels, listGroqModels } from "./lib/groq.js";
+import { formatKeyValue, formatNotice, formatPanel, formatWrappedValue } from "./lib/ui.js";
 import type { ClilyConfig, ProviderModelInfo, ProviderName, SafetyMode } from "./types.js";
 
 function isPromptCancelled(error: unknown): boolean {
@@ -41,6 +43,26 @@ function sortModels(models: ProviderModelInfo[]): ProviderModelInfo[] {
     const rightName = right.displayName ?? right.name;
     return leftName.localeCompare(rightName);
   });
+}
+
+function formatProviderName(provider: ProviderName): string {
+  switch (provider) {
+    case "gemini":
+      return "Gemini";
+    case "groq":
+      return "Groq";
+  }
+}
+
+function formatModeName(mode: SafetyMode): string {
+  switch (mode) {
+    case "safe":
+      return "Safe";
+    case "balanced":
+      return "Balanced";
+    case "auto":
+      return "Auto";
+  }
 }
 
 function getProviderDefaults(provider: ProviderName): { apiKeyLabel: string; model: string; modelLabel: string } {
@@ -89,8 +111,15 @@ async function selectProviderModel(provider: ProviderName, apiKey: string, fallb
 }
 
 export async function runSetup(): Promise<ClilyConfig> {
+  console.log("");
+  console.log(formatPanel("Clily Setup", [
+    formatNotice("info", "Configure provider, safety mode, privacy, and context."),
+    formatKeyValue("Shell", pc.white(detectShell())),
+    formatKeyValue("Secrets", pc.white("Encrypted local store"))
+  ]));
+
   const provider = await select<ProviderName>({
-    message: "Select AI provider",
+    message: "Provider",
     choices: [
       { name: "Gemini", value: "gemini", description: "Google Gemini Developer API" },
       { name: "Groq", value: "groq", description: "Groq OpenAI-compatible API" }
@@ -99,11 +128,11 @@ export async function runSetup(): Promise<ClilyConfig> {
   });
 
   const mode = await select<SafetyMode>({
-    message: "Select execution mode",
+    message: "Mode",
     choices: [
-      { name: `safe - ${describeMode("safe")}`, value: "safe" },
-      { name: `balanced - ${describeMode("balanced")}`, value: "balanced" },
-      { name: `auto - ${describeMode("auto")}`, value: "auto" }
+      { name: "Safe", value: "safe", description: describeMode("safe") },
+      { name: "Balanced", value: "balanced", description: describeMode("balanced") },
+      { name: "Auto", value: "auto", description: describeMode("auto") }
     ],
     default: "balanced"
   });
@@ -111,7 +140,7 @@ export async function runSetup(): Promise<ClilyConfig> {
   const providerDefaults = getProviderDefaults(provider);
 
   const apiKey = await password({
-    message: `Enter your ${providerDefaults.apiKeyLabel}`,
+    message: providerDefaults.apiKeyLabel,
     mask: "*"
   });
 
@@ -134,17 +163,17 @@ export async function runSetup(): Promise<ClilyConfig> {
   }
 
   const maskSecrets = await confirm({
-    message: "Mask tokens, API keys, and .env-style secrets before sending context?",
+    message: "Mask secrets before sending context?",
     default: true
   });
 
   const sendHistory = await confirm({
-    message: "Allow sanitized shell history to be used as context?",
+    message: "Use sanitized shell history as context?",
     default: true
   });
 
   const historyLimitValue = await input({
-    message: "How many recent commands should be used for context? (0 disables history)",
+    message: "History limit (0 disables history)",
     default: "20",
     validate(value) {
       const parsed = Number.parseInt(value, 10);
@@ -170,5 +199,16 @@ export async function runSetup(): Promise<ClilyConfig> {
   });
 
   await saveConfig(config);
+  console.log("");
+  console.log(formatPanel("Setup Complete", [
+    formatNotice("success", "Clily is ready."),
+    formatKeyValue("Provider", pc.white(formatProviderName(config.provider.name))),
+    ...formatWrappedValue("Model", config.provider.model),
+    formatKeyValue("Mode", pc.white(formatModeName(mode))),
+    formatKeyValue("Shell", pc.white(config.shell)),
+    formatKeyValue("API key", pc.green("stored securely")),
+    formatKeyValue("History", pc.white(config.privacy.sendHistory ? "enabled" : "disabled")),
+    formatKeyValue("History limit", pc.white(String(config.history.historyLimit)))
+  ]));
   return config;
 }
