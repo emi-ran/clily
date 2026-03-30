@@ -1,24 +1,54 @@
 {
-  "name": "clily",
+  "name": "@emi-ran/clily",
   "version": "0.1.0",
-  "description": "Natural language to shell command CLI assistant",
+  "description": "CLI that turns natural language into safer shell commands",
   "type": "module",
+  "main": "dist/index.js",
   "bin": {
     "clily": "dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"import('node:fs/promises').then(fs => fs.rm('dist', { recursive: true, force: true }))\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "check": "tsc --noEmit -p tsconfig.json",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "prepack": "npm run check && npm run build && npm run test"
   },
   "keywords": [
     "cli",
+    "command-line",
+    "shell",
+    "powershell",
+    "bash",
+    "zsh",
+    "productivity",
+    "developer-tools",
     "gemini",
+    "groq",
     "terminal",
     "ai"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emi-ran/clily.git"
+  },
+  "homepage": "https://github.com/emi-ran/clily#readme",
+  "bugs": {
+    "url": "https://github.com/emi-ran/clily/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20.11.0"
   },

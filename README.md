@@ -2,6 +2,9 @@
 
 `clily` turns natural language into a single shell command, checks it against local safety rules, and then lets you run or cancel it.
 
+NPM package name: `@emi-ran/clily`
+CLI command: `clily`
+
 ## Current Status
 
 - TypeScript CLI project is set up
@@ -13,6 +16,21 @@
 - Provider API keys are stored in an encrypted local secrets file
 
 ## Install
+
+Global install after publish:
+
+```bash
+npm install -g @emi-ran/clily
+```
+
+Then run:
+
+```bash
+clily --setup
+clily "git status"
+```
+
+Local development install:
 
 ```bash
 npm install
@@ -40,6 +58,14 @@ npm run test
 node dist/index.js --help
 ```
 
+## Platform Support
+
+- Windows: PowerShell and CMD
+- macOS: bash and zsh
+- Linux: bash and zsh
+
+Clily detects the current shell and asks the model for shell-appropriate commands.
+
 ## Setup Flow
 
 Run setup anytime with:
@@ -66,6 +92,12 @@ Setup currently asks for:
 
 API keys are not written to `config.json`. They are stored in a separate encrypted file under the same config directory.
 
+If you publish or install the package globally, setup is still the first thing to run:
+
+```bash
+clily --setup
+```
+
 ## Main Usage
 
 ```bash
@@ -81,6 +113,15 @@ Default flow:
 3. Local safety rules evaluate the command.
 4. Clily shows the command, risk, reason, and warnings.
 5. You choose `Run` or `Cancel` unless the selected mode allows auto-run.
+
+Examples:
+
+```bash
+clily "git status"
+clily "node surumunu goster"
+clily "ruby kurulu mu"
+clily "docker containeri sil" --run
+```
 
 ## Safety Modes
 
@@ -127,6 +168,20 @@ clily config set history.historyLimit 10
 clily config set provider.apiKey YOUR_KEY
 ```
 
+Health check:
+
+```bash
+clily config doctor
+```
+
+This checks whether:
+
+- config exists
+- encrypted secrets file exists
+- config is valid
+- plaintext API keys were written by mistake
+- the current provider has an encrypted API key
+
 Supported `config set` keys:
 
 - `mode`
@@ -145,6 +200,11 @@ Supported `config set` keys:
 - the secrets file is encrypted locally before it is written to disk
 - if you need a stable custom encryption secret across machines, set `CLILY_SECRET_KEY`
 - plaintext `provider.apiKey` inside `config.json` is not supported
+
+Important notes:
+
+- encrypted local storage is better than plaintext config, but it is not a full OS keychain yet
+- if you move your config between machines, decryption can fail unless `CLILY_SECRET_KEY` is also preserved
 
 ## Context Behavior
 
@@ -184,6 +244,27 @@ clily config doctor
 npm run test
 ```
 
+## Release Smoke Test
+
+Before publishing, these are the minimum checks:
+
+```bash
+npm run check
+npm run build
+npm run test
+npm pack
+```
+
+Manual smoke test after install:
+
+```bash
+clily --help
+clily --setup
+clily config show
+clily config doctor
+clily "ruby kurulu mu"
+```
+
 ## Project Files
 
 - `PROJECT_PLAN.md`: phased roadmap, bugs, history
@@ -192,7 +273,6 @@ npm run test
 
 ## Known Gaps
 
-- README exists, but npm packaging is not finalized
 - keychain-backed secret storage is not implemented yet
 - model filtering may still need tuning for some providers
 - local fast-paths and prompt/result cache are not implemented yet
