@@ -8,8 +8,7 @@ export const configSchema = z.object({
   mode: safetyModeSchema,
   provider: z.object({
     name: providerNameSchema,
-    model: z.string().min(1),
-    apiKey: z.string().min(1).optional()
+    model: z.string().min(1)
   }),
   shell: shellNameSchema,
   privacy: z.object({

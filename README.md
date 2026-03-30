@@ -10,6 +10,7 @@
 - Local safety layer is implemented
 - Shell history and last command output can be used as context
 - Config and safety rules can be managed from the CLI
+- Provider API keys are stored in an encrypted local secrets file
 
 ## Install
 
@@ -35,6 +36,7 @@ npm run dev -- "choco ile ruby kur" --run
 
 ```bash
 npm run build
+npm run test
 node dist/index.js --help
 ```
 
@@ -61,6 +63,8 @@ Setup currently asks for:
 - secret masking
 - history usage
 - history limit
+
+API keys are not written to `config.json`. They are stored in a separate encrypted file under the same config directory.
 
 ## Main Usage
 
@@ -119,6 +123,7 @@ clily config set provider.name groq
 clily config set provider.model openai/gpt-oss-20b
 clily config set privacy.sendHistory false
 clily config set history.historyLimit 10
+clily config set provider.apiKey YOUR_KEY
 ```
 
 Supported `config set` keys:
@@ -131,6 +136,14 @@ Supported `config set` keys:
 - `privacy.maskSecrets`
 - `privacy.sendHistory`
 - `history.historyLimit`
+
+## Secret Storage
+
+- `config.json` keeps non-secret settings only
+- provider API keys are stored in `secrets.enc.json`
+- the secrets file is encrypted locally before it is written to disk
+- if you need a stable custom encryption secret across machines, set `CLILY_SECRET_KEY`
+- plaintext `provider.apiKey` inside `config.json` is not supported
 
 ## Context Behavior
 
@@ -166,6 +179,7 @@ Current behavior:
 clily --help
 clily config --help
 clily safety --help
+npm run test
 ```
 
 ## Project Files
@@ -177,7 +191,7 @@ clily safety --help
 ## Known Gaps
 
 - README exists, but npm packaging is not finalized
-- keychain/env-based secret storage is not implemented yet
+- keychain-backed secret storage is not implemented yet
 - model filtering may still need tuning for some providers
 - local fast-paths and prompt/result cache are not implemented yet
 

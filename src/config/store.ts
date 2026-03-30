@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { defaultConfig } from "./defaults.js";
 import { getConfigDir, getConfigPath } from "./paths.js";
+import { getProviderApiKey, setProviderApiKey } from "./secrets.js";
 import { configSchema } from "./schema.js";
 import type { ClilyConfig } from "../types.js";
 
@@ -25,13 +26,21 @@ export async function configExists(): Promise<boolean> {
 
 export async function loadConfig(): Promise<ClilyConfig> {
   const raw = await fs.readFile(getConfigPath(), "utf8");
-  const parsed = JSON.parse(raw);
-  return configSchema.parse(parsed);
+  const parsedJson = JSON.parse(raw) as { provider?: { apiKey?: unknown } };
+  if (parsedJson.provider?.apiKey !== undefined) {
+    throw new Error("Plaintext provider.apiKey in config.json is no longer supported. Run `clily setup` or `clily config set provider.apiKey <value>`.");
+  }
+
+  const parsed = configSchema.parse(parsedJson);
+  return attachProviderApiKey(parsed);
 }
 
 export async function saveConfig(config: ClilyConfig): Promise<void> {
-  await fs.mkdir(getConfigDir(), { recursive: true });
-  await fs.writeFile(getConfigPath(), `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  if (config.provider.apiKey) {
+    await setProviderApiKey(config.provider.name, config.provider.apiKey);
+  }
+
+  await writeConfigFile(configSchema.parse(stripApiKey(config)));
 }
 
 export function createConfig(overrides: Partial<ClilyConfig> = {}): ClilyConfig {
@@ -74,6 +83,7 @@ export async function updateConfigValue(path: ConfigPathKey, value: string): Pro
       break;
     case "provider.name":
       config.provider.name = value as ClilyConfig["provider"]["name"];
+      config.provider.apiKey = await getProviderApiKey(config.provider.name);
       break;
     case "provider.model":
       config.provider.model = value;
@@ -142,4 +152,31 @@ function parseInteger(value: string, path: string): number {
   }
 
   return parsed;
+}
+
+function stripApiKey(config: ClilyConfig): ClilyConfig {
+  return {
+    ...config,
+    provider: {
+      ...config.provider,
+      apiKey: undefined
+    }
+  };
+}
+
+async function attachProviderApiKey(config: ClilyConfig): Promise<ClilyConfig> {
+  const storedApiKey = await getProviderApiKey(config.provider.name);
+
+  return {
+    ...config,
+    provider: {
+      ...config.provider,
+      apiKey: storedApiKey
+    }
+  };
+}
+
+async function writeConfigFile(config: ClilyConfig): Promise<void> {
+  await fs.mkdir(getConfigDir(), { recursive: true });
+  await fs.writeFile(getConfigPath(), `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }

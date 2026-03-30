@@ -18,3 +18,7 @@ export function getConfigDir(): string {
 export function getConfigPath(): string {
   return path.join(getConfigDir(), "config.json");
 }
+
+export function getSecretsPath(): string {
+  return path.join(getConfigDir(), "secrets.enc.json");
+}

@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 import { z } from "zod";
 import type { CommandGenerationContext, GenerateCommandResult, ProviderModelInfo } from "../types.js";
+import { normalizeCommandResult } from "./command-result.js";
 
 interface GroqModelsResponse {
   data?: Array<{
@@ -8,30 +9,6 @@ interface GroqModelsResponse {
     owned_by?: string;
   }>;
 }
-
-const generateCommandResultSchema = z.object({
-  command: z.string(),
-  shell: z.string(),
-  intent: z.string(),
-  confidence: z.number().min(0).max(1),
-  requiresConfirmation: z.boolean(),
-  riskLevel: z.enum(["low", "medium", "high"]),
-  reason: z.string(),
-  usedHistory: z.boolean(),
-  warnings: z.array(z.string())
-});
-
-const partialGenerateCommandResultSchema = z.object({
-  command: z.string().optional(),
-  shell: z.string().optional(),
-  intent: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-  requiresConfirmation: z.boolean().optional(),
-  riskLevel: z.enum(["low", "medium", "high"]).optional(),
-  reason: z.string().optional(),
-  usedHistory: z.unknown().optional(),
-  warnings: z.unknown().optional()
-});
 
 function buildGenerationSchema(): Record<string, unknown> {
   return {
@@ -87,27 +64,7 @@ function buildGroqSystemPrompt(): string {
 }
 
 function normalizeGroqResult(parsed: unknown, context: CommandGenerationContext): GenerateCommandResult {
-  const partial = partialGenerateCommandResultSchema.parse(parsed);
-  const command = partial.command?.trim() ?? "";
-  const warnings = Array.isArray(partial.warnings)
-    ? partial.warnings.filter((item): item is string => typeof item === "string")
-    : [];
-  const usedHistory = typeof partial.usedHistory === "boolean"
-    ? partial.usedHistory
-    : context.history.length > 0;
-  const normalized: GenerateCommandResult = {
-    command,
-    shell: partial.shell ?? context.shell,
-    intent: partial.intent ?? (command ? "run_command" : "refuse"),
-    confidence: partial.confidence ?? (command ? 0.7 : 0),
-    requiresConfirmation: partial.requiresConfirmation ?? true,
-    riskLevel: partial.riskLevel ?? (command ? "medium" : "high"),
-    reason: partial.reason ?? (command ? "Generated from Groq JSON object fallback." : "Groq did not return a usable command."),
-    usedHistory,
-    warnings
-  };
-
-  return generateCommandResultSchema.parse(normalized);
+  return normalizeCommandResult(parsed, context, "Groq");
 }
 
 function buildUserPrompt(context: CommandGenerationContext): string {

@@ -25,13 +25,14 @@
 
 - [x] Define MVP behavior and command flow
 - [x] Decide config file location and format
-- [ ] Decide secret storage approach for API keys
+- [x] Decide secret storage approach for API keys
 - [x] Define structured output schema
 - [x] Define allowlist / warnlist / denylist behavior
 
 ### Phase 1 - Project Bootstrap
 
 - [x] Initialize TypeScript CLI project
+- [x] Add basic test setup
 - [ ] Add linting and formatting setup
 - [x] Add CLI entry point
 - [x] Add argument parsing
@@ -129,6 +130,10 @@ Use this section to track active and resolved issues.
 ### Resolved
 
 - [x] Gemini setup model picker initially hid newer models because raw HTTP parsing/filtering did not reflect the official SDK model metadata. Moving to `@google/genai` fixed the main visibility issue.
+- [x] Provider responses could fail hard when `riskLevel` came back in an unexpected format. Result normalization now tolerates imperfect provider JSON and falls back safely.
+- [x] Raw provider parse and validation failures could leak technical JSON/Zod errors to the CLI. Provider errors are now mapped to user-friendly messages.
+- [x] Provider API keys were stored in plaintext config. They are now written to a separate encrypted local secrets file.
+- [x] Plaintext `provider.apiKey` fallback in `config.json` kept the old storage path alive. Config loading now rejects plaintext keys and only uses encrypted secret storage.
 
 ## Change History
 
@@ -146,6 +151,10 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-30 | OpenCode | Added session execution capture so the last command, exit code, stdout, and stderr are saved and can be reused as future context. |
 | 2026-03-30 | OpenCode | Added `config` and `safety` commands for updating settings and rules, plus clearer CLI help text with examples. |
 | 2026-03-30 | OpenCode | Added `README.md` and `NEXT_SESSION.md` so the project can be resumed easily in a future chat. |
+| 2026-03-31 | OpenCode | Normalized provider command results so malformed `riskLevel` values no longer crash generation and instead fall back to safe defaults. |
+| 2026-03-31 | OpenCode | Added user-friendly provider error mapping so malformed JSON, auth issues, rate limits, and network failures show readable CLI messages. |
+| 2026-03-31 | OpenCode | Moved provider API keys out of `config.json` into an encrypted local secrets file and added a first automated test suite with `npm run test`. |
+| 2026-03-31 | OpenCode | Removed plaintext API key fallback from `config.json`; config loading now requires encrypted secret storage only. |
 
 ## Notes
 

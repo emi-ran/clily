@@ -25,27 +25,26 @@ This file is for coding agents working in this repository.
 - Install dependencies: `npm install`
 - Type-check the project: `npm run check`
 - Build the project: `npm run build`
+- Run tests: `npm run test`
 - Run in dev mode: `npm run dev -- "git status"`
 - Run setup in dev mode: `npm run dev -- --setup`
 
 ## Lint And Test Status
 
 - There is currently no linter configured.
-- There is currently no test runner configured.
-- The closest thing to a validation command is `npm run check`.
-- Agents should run both `npm run check` and `npm run build` after meaningful code changes.
+- Tests use the built-in Node test runner via `tsx --test`.
+- Agents should run `npm run check`, `npm run build`, and `npm run test` after meaningful code changes.
 
 ## Single Test Guidance
 
-- There are no tests yet, so there is no single-test command today.
-- If a test framework is added later, document these commands here:
-  - run all tests
-  - run one file
-  - run one test name
-  - watch mode
-- Until then, use these validation steps:
+- Run all tests: `npm run test`
+- Run one file: `npx tsx --test tests/config-store.test.ts`
+- Run one test name: `npx tsx --test --test-name-pattern "saveConfig" tests/config-store.test.ts`
+- There is no watch mode configured today.
+- Standard validation steps:
   - `npm run check`
   - `npm run build`
+  - `npm run test`
   - optionally run `npm run dev -- --help`
 
 ## Key Commands For Manual Verification
@@ -62,6 +61,7 @@ This file is for coding agents working in this repository.
 - `src/index.ts`: main CLI command tree and command dispatch
 - `src/setup.ts`: interactive setup wizard
 - `src/config/`: config defaults, schema, paths, and persistence
+- `src/config/secrets.ts`: encrypted provider secret storage
 - `src/lib/gemini.ts`: Gemini provider integration
 - `src/lib/groq.ts`: Groq provider integration
 - `src/lib/provider.ts`: provider dispatch layer
@@ -184,11 +184,11 @@ This file is for coding agents working in this repository.
 - model filtering and ranking improvements
 - keychain or env-based secret storage
 - better context selection for correction-style prompts
-- test framework setup
+- broader test coverage
 
 ## Do Not Assume
 
 - There is no linter today.
-- There is no test suite today.
+- There is a small test suite today, but coverage is still limited.
 - There are no Cursor or Copilot rule files today.
 - There is no npm publish pipeline finalized yet.

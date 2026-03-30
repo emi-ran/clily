@@ -1,18 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import { z } from "zod";
 import type { CommandGenerationContext, GenerateCommandResult, GeminiModelInfo } from "../types.js";
-
-const generateCommandResultSchema = z.object({
-  command: z.string(),
-  shell: z.string(),
-  intent: z.string(),
-  confidence: z.number().min(0).max(1),
-  requiresConfirmation: z.boolean(),
-  riskLevel: z.enum(["low", "medium", "high"]),
-  reason: z.string(),
-  usedHistory: z.boolean(),
-  warnings: z.array(z.string())
-});
+import { normalizeCommandResult } from "./command-result.js";
 
 function buildGenerationSchema(): Record<string, unknown> {
   return {
@@ -142,6 +130,5 @@ export async function generateGeminiCommand(options: {
     throw new Error("Gemini returned an empty response.");
   }
 
-  const parsed = JSON.parse(text);
-  return generateCommandResultSchema.parse(parsed);
+  return normalizeCommandResult(JSON.parse(text), options.context, "Gemini");
 }

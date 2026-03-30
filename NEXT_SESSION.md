@@ -11,6 +11,9 @@ Use this file to quickly resume work on `clily` in a new chat.
 - Local safety layer is working
 - Config and safety management commands are implemented
 - Last command execution is stored and reused as context
+- API keys are stored in an encrypted local secrets file
+- Basic test setup is now available via `npm run test`
+- Plaintext `provider.apiKey` in `config.json` is intentionally rejected
 
 ## Important Files
 
@@ -26,6 +29,7 @@ Use this file to quickly resume work on `clily` in a new chat.
 - `src/lib/history.ts` - shell history loading
 - `src/lib/session.ts` - last execution capture
 - `src/config/store.ts` - config load/save/update logic
+- `src/config/secrets.ts` - encrypted API key storage
 
 ## Commands To Know
 
@@ -33,6 +37,7 @@ Use this file to quickly resume work on `clily` in a new chat.
 npm install
 npm run check
 npm run build
+npm run test
 npm run dev -- --setup
 npm run dev -- "git status"
 npm run dev -- --help
@@ -50,14 +55,16 @@ npm run dev -- --help
 - `config path`
 - `config set <path> <value>`
 - `safety allow|warn|deny list|add|remove`
+- encrypted provider secret storage
+- basic unit tests for config storage, safety, and command normalization
 
 ## Recommended Next Work
 
-1. Add local fast-paths for obvious commands like `git status`, `node -v`, `python --version`
-2. Improve provider model filtering and ranking
-3. Add README polish for npm publish/global install flow
-4. Add keychain or env-based API key storage
-5. Add better context selection for prompts like "komutun doğrusunu yaz"
+1. Improve provider model filtering and ranking
+2. Add README polish for npm publish/global install flow
+3. Add keychain-backed secret storage as an optional upgrade path
+4. Add better context selection for prompts like "komutun doğrusunu yaz"
+5. Expand automated test coverage
 
 ## Known Issues / Watchouts
 
