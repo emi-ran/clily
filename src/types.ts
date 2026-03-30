@@ -1,6 +1,6 @@
 export type SafetyMode = "safe" | "balanced" | "auto";
 
-export type ProviderName = "gemini";
+export type ProviderName = "gemini" | "groq";
 
 export type ShellName = "powershell" | "cmd" | "bash" | "zsh" | "unknown";
 
@@ -35,6 +35,13 @@ export interface ClilyConfig {
 }
 
 export interface GeminiModelInfo {
+  name: string;
+  displayName?: string;
+  description?: string;
+  supportedActions?: string[];
+}
+
+export interface ProviderModelInfo {
   name: string;
   displayName?: string;
   description?: string;

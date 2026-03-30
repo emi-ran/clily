@@ -4,8 +4,8 @@ import { Command } from "commander";
 import { configExists, loadConfig } from "./config/store.js";
 import { getConfigPath } from "./config/paths.js";
 import { detectOsLabel, detectShell } from "./lib/detect.js";
-import { generateGeminiCommand } from "./lib/gemini.js";
 import { loadHistoryContext } from "./lib/history.js";
+import { generateCommand } from "./lib/provider.js";
 import { printCommandPreview, runCommand, shouldRunCommand } from "./lib/runner.js";
 import { evaluateSafety } from "./lib/safety.js";
 import { runSetup } from "./setup.js";
@@ -40,20 +40,12 @@ program
       return;
     }
 
-    if (!config.provider.apiKey) {
-      throw new Error("No API key found. Run `clily --setup` to configure Gemini.");
-    }
-
     const history = await loadHistoryContext(config);
-    const result = await generateGeminiCommand({
-      apiKey: config.provider.apiKey,
-      model: config.provider.model,
-      context: {
-        request,
-        os: detectOsLabel(),
-        shell: config.shell || detectShell(),
-        history
-      }
+    const result = await generateCommand(config, {
+      request,
+      os: detectOsLabel(),
+      shell: config.shell || detectShell(),
+      history
     });
 
     const safety = evaluateSafety(config, result);

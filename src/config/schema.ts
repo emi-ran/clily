@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const safetyModeSchema = z.enum(["safe", "balanced", "auto"]);
-export const providerNameSchema = z.enum(["gemini"]);
+export const providerNameSchema = z.enum(["gemini", "groq"]);
 export const shellNameSchema = z.enum(["powershell", "cmd", "bash", "zsh", "unknown"]);
 
 export const configSchema = z.object({

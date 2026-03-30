@@ -17,6 +17,7 @@ const generateCommandResultSchema = z.object({
 function buildGenerationSchema(): Record<string, unknown> {
   return {
     type: "OBJECT",
+    additionalProperties: false,
     properties: {
       command: { type: "STRING" },
       shell: { type: "STRING" },

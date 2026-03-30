@@ -15,7 +15,7 @@
 
 ## Current Scope
 
-- Initial provider: Gemini
+- Initial providers: Gemini, Groq
 - Initial package target: npm package
 - Initial implementation language: TypeScript
 
@@ -123,6 +123,8 @@ Use this section to track active and resolved issues.
 ### Active
 
 - [ ] Model filtering may still need tuning as Gemini API capability metadata includes some non-command models that are technically visible via the API.
+- [ ] Groq model filtering is currently name-based and may need tuning once real model usage patterns are clearer.
+- [ ] Groq structured output support varies by model, so non-GPT-OSS models currently fall back to JSON object mode.
 
 ### Resolved
 
@@ -139,6 +141,8 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-30 | OpenCode | Added Gemini command generation with structured output, local safety evaluation, history loading and masking, and interactive run/cancel execution flow. |
 | 2026-03-30 | OpenCode | Migrated Gemini integration to `@google/genai` so setup and generation use the official SDK instead of raw HTTP calls. |
 | 2026-03-30 | OpenCode | Simplified Gemini setup back to a single filtered picker and tightened model filtering to hide non-command models like embedding, TTS, and live variants. |
+| 2026-03-30 | OpenCode | Added Groq as a second provider, including setup-time provider selection, Groq model listing, and OpenAI-compatible structured command generation. |
+| 2026-03-30 | OpenCode | Switched Groq generation to `groq-sdk` and added model-aware structured output fallback to avoid 400 errors on models without strict schema support. |
 
 ## Notes
 
