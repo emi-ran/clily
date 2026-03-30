@@ -13,7 +13,7 @@ import {
 import { getConfigPath } from "./config/paths.js";
 import { detectOsLabel, detectShell } from "./lib/detect.js";
 import { formatConfig, formatConfigDoctor, formatSafetyList } from "./lib/format.js";
-import { loadHistoryContext } from "./lib/history.js";
+import { loadHistoryContext, saveCommandHistory } from "./lib/history.js";
 import { generateCommand } from "./lib/provider.js";
 import { printCommandPreview, runCommand, shouldRunCommand } from "./lib/runner.js";
 import { evaluateSafety } from "./lib/safety.js";
@@ -186,6 +186,7 @@ async function handlePrompt(request: string, forceRun: boolean): Promise<void> {
   }
 
   const execution = await runCommand(result.command, shell);
+  await saveCommandHistory(config, result.command);
   await saveLastExecution(config, execution);
 
   if (execution.exitCode !== 0) {

@@ -54,7 +54,7 @@ export async function shouldRunCommand(options: {
     return false;
   }
 
-  if (forceRun && !safety.shouldConfirm) {
+  if (canSkipConfirmationWithForceRun(forceRun, result, safety)) {
     return true;
   }
 
@@ -68,6 +68,22 @@ export async function shouldRunCommand(options: {
   });
 
   return action === "run";
+}
+
+export function canSkipConfirmationWithForceRun(
+  forceRun: boolean,
+  result: GenerateCommandResult,
+  safety: SafetyEvaluation
+): boolean {
+  if (!forceRun || safety.blocked) {
+    return false;
+  }
+
+  if (safety.match === "warnlist" || safety.match === "denylist") {
+    return false;
+  }
+
+  return result.riskLevel === "low";
 }
 
 function formatRiskLevel(riskLevel: GenerateCommandResult["riskLevel"]): string {

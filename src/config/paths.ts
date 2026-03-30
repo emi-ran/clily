@@ -22,3 +22,7 @@ export function getConfigPath(): string {
 export function getSecretsPath(): string {
   return path.join(getConfigDir(), "secrets.enc.json");
 }
+
+export function getCommandHistoryPath(): string {
+  return path.join(getConfigDir(), "command-history.log");
+}
