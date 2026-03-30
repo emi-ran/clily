@@ -71,7 +71,7 @@
 - [x] Offer `Run` / `Cancel` interaction
 - [x] Add `--run` support
 - [x] Add safe execution wrapper
-- [ ] Capture stdout / stderr for future context use
+- [x] Capture stdout / stderr for future context use
 
 ### Phase 6 - History and Context
 
@@ -143,6 +143,7 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-30 | OpenCode | Simplified Gemini setup back to a single filtered picker and tightened model filtering to hide non-command models like embedding, TTS, and live variants. |
 | 2026-03-30 | OpenCode | Added Groq as a second provider, including setup-time provider selection, Groq model listing, and OpenAI-compatible structured command generation. |
 | 2026-03-30 | OpenCode | Switched Groq generation to `groq-sdk` and added model-aware structured output fallback to avoid 400 errors on models without strict schema support. |
+| 2026-03-30 | OpenCode | Added session execution capture so the last command, exit code, stdout, and stderr are saved and can be reused as future context. |
 
 ## Notes
 

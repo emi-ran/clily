@@ -1,6 +1,6 @@
 import { select } from "@inquirer/prompts";
 import { spawn } from "node:child_process";
-import type { GenerateCommandResult, SafetyEvaluation, ShellName } from "../types.js";
+import type { CommandExecutionRecord, GenerateCommandResult, SafetyEvaluation, ShellName } from "../types.js";
 
 function getShellCommand(shell: ShellName): { file: string; args: string[] } {
   switch (shell) {
@@ -60,15 +60,37 @@ export async function shouldRunCommand(options: {
   return action === "run";
 }
 
-export async function runCommand(command: string, shell: ShellName): Promise<number> {
+export async function runCommand(command: string, shell: ShellName): Promise<CommandExecutionRecord> {
   const shellCommand = getShellCommand(shell);
 
   const child = spawn(shellCommand.file, [...shellCommand.args, command], {
-    stdio: "inherit"
+    stdio: ["inherit", "pipe", "pipe"]
   });
 
-  return await new Promise<number>((resolve, reject) => {
+  let stdout = "";
+  let stderr = "";
+
+  child.stdout?.on("data", (chunk: Buffer | string) => {
+    const text = chunk.toString();
+    stdout += text;
+    process.stdout.write(text);
+  });
+
+  child.stderr?.on("data", (chunk: Buffer | string) => {
+    const text = chunk.toString();
+    stderr += text;
+    process.stderr.write(text);
+  });
+
+  return await new Promise<CommandExecutionRecord>((resolve, reject) => {
     child.on("error", reject);
-    child.on("exit", (code) => resolve(code ?? 1));
+    child.on("exit", (code) => resolve({
+      command,
+      shell,
+      exitCode: code ?? 1,
+      stdout,
+      stderr,
+      executedAt: new Date().toISOString()
+    }));
   });
 }

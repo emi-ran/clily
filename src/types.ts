@@ -75,3 +75,12 @@ export interface CommandGenerationContext {
   shell: ShellName;
   history: string[];
 }
+
+export interface CommandExecutionRecord {
+  command: string;
+  shell: ShellName;
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  executedAt: string;
+}

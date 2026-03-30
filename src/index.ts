@@ -8,6 +8,7 @@ import { loadHistoryContext } from "./lib/history.js";
 import { generateCommand } from "./lib/provider.js";
 import { printCommandPreview, runCommand, shouldRunCommand } from "./lib/runner.js";
 import { evaluateSafety } from "./lib/safety.js";
+import { loadSessionContext, saveLastExecution } from "./lib/session.js";
 import { runSetup } from "./setup.js";
 
 const program = new Command();
@@ -40,7 +41,10 @@ program
       return;
     }
 
-    const history = await loadHistoryContext(config);
+    const history = [
+      ...(await loadHistoryContext(config)),
+      ...(await loadSessionContext(config))
+    ];
     const result = await generateCommand(config, {
       request,
       os: detectOsLabel(),
@@ -68,9 +72,11 @@ program
       return;
     }
 
-    const exitCode = await runCommand(result.command, config.shell || detectShell());
-    if (exitCode !== 0) {
-      process.exitCode = exitCode;
+    const execution = await runCommand(result.command, config.shell || detectShell());
+    await saveLastExecution(config, execution);
+
+    if (execution.exitCode !== 0) {
+      process.exitCode = execution.exitCode;
     }
   });
 
