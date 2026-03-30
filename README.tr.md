@@ -4,7 +4,7 @@
 
 `clily`, doğal dille yazdığın isteği tek bir shell komutuna dönüştürür, komutu yerel güvenlik kurallarından geçirir ve sonra çalıştırıp çalıştırmamayı sana bırakır.
 
-NPM paket adı: `@emi-ran/clily`
+NPM paket adı: `@emiran/clily`
 CLI komutu: `clily`
 
 ## Neden Clily?
@@ -37,7 +37,7 @@ Clily aktif shell'i algılar ve modele shell'e uygun komut istemeye çalışır.
 ## Kurulum
 
 ```bash
-npm install -g @emi-ran/clily
+npm install -g @emiran/clily
 ```
 
 ## Hızlı Başlangıç

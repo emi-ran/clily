@@ -4,7 +4,7 @@ English | [Türkçe](README.tr.md)
 
 `clily` turns natural language into a single shell command, checks it against local safety rules, and lets you run or cancel it.
 
-NPM package: `@emi-ran/clily`
+NPM package: `@emiran/clily`
 CLI command: `clily`
 
 ## Why Clily
@@ -37,7 +37,7 @@ Clily detects your current shell and asks the model for shell-appropriate comman
 ## Install
 
 ```bash
-npm install -g @emi-ran/clily
+npm install -g @emiran/clily
 ```
 
 ## Quick Start
