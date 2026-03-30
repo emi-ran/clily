@@ -85,11 +85,11 @@
 ### Phase 7 - Config Management
 
 - [x] Add config display command
-- [ ] Add config edit/update command
-- [ ] Add allowlist management command
-- [ ] Add warnlist management command
-- [ ] Add denylist management command
-- [ ] Add privacy settings management
+- [x] Add config edit/update command
+- [x] Add allowlist management command
+- [x] Add warnlist management command
+- [x] Add denylist management command
+- [x] Add privacy settings management
 
 ### Phase 8 - Packaging and Release
 
@@ -144,6 +144,8 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-30 | OpenCode | Added Groq as a second provider, including setup-time provider selection, Groq model listing, and OpenAI-compatible structured command generation. |
 | 2026-03-30 | OpenCode | Switched Groq generation to `groq-sdk` and added model-aware structured output fallback to avoid 400 errors on models without strict schema support. |
 | 2026-03-30 | OpenCode | Added session execution capture so the last command, exit code, stdout, and stderr are saved and can be reused as future context. |
+| 2026-03-30 | OpenCode | Added `config` and `safety` commands for updating settings and rules, plus clearer CLI help text with examples. |
+| 2026-03-30 | OpenCode | Added `README.md` and `NEXT_SESSION.md` so the project can be resumed easily in a future chat. |
 
 ## Notes
 
