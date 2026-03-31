@@ -15,7 +15,7 @@
 
 ## Current Scope
 
-- Initial providers: Gemini, Groq
+- Initial providers: Gemini, Groq, OpenAI, OpenRouter
 - Initial package target: npm package
 - Initial implementation language: TypeScript
 
@@ -126,7 +126,7 @@ Use this section to track active and resolved issues.
 
 - [ ] Model filtering may still need tuning as Gemini API capability metadata includes some non-command models that are technically visible via the API.
 - [ ] Groq model filtering is currently name-based and may need tuning once real model usage patterns are clearer.
-- [ ] Groq structured output support varies by model, so non-GPT-OSS models currently fall back to JSON object mode.
+- [ ] OpenRouter model filtering and ranking may need tuning because the live catalog includes many provider and modality variants.
 - [ ] Published package install visibility should be rechecked after npm registry propagation with `npm view @emiran/clily version` and a fresh install test.
 
 ### Resolved
@@ -149,7 +149,7 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-30 | OpenCode | Migrated Gemini integration to `@google/genai` so setup and generation use the official SDK instead of raw HTTP calls. |
 | 2026-03-30 | OpenCode | Simplified Gemini setup back to a single filtered picker and tightened model filtering to hide non-command models like embedding, TTS, and live variants. |
 | 2026-03-30 | OpenCode | Added Groq as a second provider, including setup-time provider selection, Groq model listing, and OpenAI-compatible structured command generation. |
-| 2026-03-30 | OpenCode | Switched Groq generation to `groq-sdk` and added model-aware structured output fallback to avoid 400 errors on models without strict schema support. |
+| 2026-03-30 | OpenCode | Switched Groq generation to provider-aware structured output handling and added model-aware fallback to avoid schema-related failures on weaker models. |
 | 2026-03-30 | OpenCode | Added session execution capture so the last command, exit code, stdout, and stderr are saved and can be reused as future context. |
 | 2026-03-30 | OpenCode | Added `config` and `safety` commands for updating settings and rules, plus clearer CLI help text with examples. |
 | 2026-03-30 | OpenCode | Added `README.md` and `NEXT_SESSION.md` so the project can be resumed easily in a future chat. |
@@ -163,6 +163,9 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-31 | OpenCode | Updated `--run` behavior so low-risk commands in balanced mode can skip confirmation unless warnlist, denylist, or blocked rules apply. |
 | 2026-03-31 | OpenCode | Prepared the package for npm release with scoped metadata, clean builds, `prepack` validation, and release docs including English and Turkish READMEs plus `CONTRIBUTING.md`. |
 | 2026-03-31 | OpenCode | Switched the package scope to `@emiran` after confirming the npm account name and published the first public package version. |
+| 2026-03-31 | OpenCode | Reworked provider generation around AI SDK adapters with lazy-loaded Gemini, Groq, and OpenRouter support plus provider-specific saved model defaults in setup. |
+| 2026-03-31 | OpenCode | Added OpenAI as a first-class provider with live model listing, setup support, and provider-specific saved model defaults. |
+| 2026-03-31 | OpenCode | Improved setup UX with placeholder-style saved API keys, select-based boolean prompts, and provider API key validation before falling back on models. |
 
 ## Notes
 

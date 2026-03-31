@@ -62,9 +62,12 @@ This file is for coding agents working in this repository.
 - `src/setup.ts`: interactive setup wizard
 - `src/config/`: config defaults, schema, paths, and persistence
 - `src/config/secrets.ts`: encrypted provider secret storage
-- `src/lib/gemini.ts`: Gemini provider integration
-- `src/lib/groq.ts`: Groq provider integration
+- `src/lib/gemini.ts`: Gemini provider adapter and live model listing
+- `src/lib/groq.ts`: Groq provider adapter and live model listing
+- `src/lib/openai.ts`: OpenAI provider adapter and live model listing
+- `src/lib/openrouter.ts`: OpenRouter provider adapter and live model listing
 - `src/lib/provider.ts`: provider dispatch layer
+- `src/lib/provider-shared.ts`: shared AI SDK generation flow
 - `src/lib/safety.ts`: allowlist, warnlist, denylist logic
 - `src/lib/runner.ts`: run/cancel flow and command execution
 - `src/lib/history.ts`: shell history loading and masking

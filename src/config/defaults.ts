@@ -12,6 +12,12 @@ export const defaultConfig: ClilyConfig = {
     },
     groq: {
       model: "openai/gpt-oss-20b"
+    },
+    openai: {
+      model: "gpt-4o-mini"
+    },
+    openrouter: {
+      model: "openai/gpt-oss-20b"
     }
   },
   shell: "unknown",

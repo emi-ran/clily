@@ -19,8 +19,18 @@ export interface ConfigDoctorReport {
   issues: string[];
 }
 
+type PartialProviderProfiles = Partial<ProviderProfiles>;
+
 type NormalizableConfig = Omit<ClilyConfig, "providers"> & {
-  providers?: ProviderProfiles;
+  providers?: PartialProviderProfiles;
+};
+
+type ConfigOverrides = Partial<Omit<ClilyConfig, "provider" | "providers" | "privacy" | "history" | "safety">> & {
+  provider?: Partial<ClilyConfig["provider"]>;
+  providers?: PartialProviderProfiles;
+  privacy?: Partial<ClilyConfig["privacy"]>;
+  history?: Partial<ClilyConfig["history"]>;
+  safety?: Partial<ClilyConfig["safety"]>;
 };
 
 type ConfigPathKey =
@@ -113,7 +123,7 @@ export async function saveConfig(config: ClilyConfig): Promise<void> {
   await writeConfigFile(configSchema.parse(stripApiKey(normalized)));
 }
 
-export function createConfig(overrides: Partial<ClilyConfig> = {}): ClilyConfig {
+export function createConfig(overrides: ConfigOverrides = {}): ClilyConfig {
   return normalizeConfig({
     ...defaultConfig,
     ...overrides,
@@ -131,6 +141,14 @@ export function createConfig(overrides: Partial<ClilyConfig> = {}): ClilyConfig 
       groq: {
         ...defaultConfig.providers.groq,
         ...overrides.providers?.groq
+      },
+      openai: {
+        ...defaultConfig.providers.openai,
+        ...overrides.providers?.openai
+      },
+      openrouter: {
+        ...defaultConfig.providers.openrouter,
+        ...overrides.providers?.openrouter
       }
     },
     privacy: {
@@ -275,7 +293,7 @@ function normalizeConfig(config: NormalizableConfig): ClilyConfig {
 }
 
 function normalizeProviderProfiles(
-  providers: ClilyConfig["providers"] | undefined,
+  providers: PartialProviderProfiles | undefined,
   activeProvider: ClilyConfig["provider"]
 ): ProviderProfiles {
   const normalized: ProviderProfiles = {
@@ -288,6 +306,14 @@ function normalizeProviderProfiles(
     groq: {
       ...defaultConfig.providers.groq,
       ...providers?.groq
+    },
+    openai: {
+      ...defaultConfig.providers.openai,
+      ...providers?.openai
+    },
+    openrouter: {
+      ...defaultConfig.providers.openrouter,
+      ...providers?.openrouter
     }
   };
 

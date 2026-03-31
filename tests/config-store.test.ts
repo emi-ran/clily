@@ -105,6 +105,8 @@ test("saveConfig preserves provider-specific model selections", async () => {
     assert.equal(loaded.provider.model, "openai/gpt-oss-120b");
     assert.equal(loaded.providers.gemini.model, "models/gemini-2.5-pro");
     assert.equal(loaded.providers.groq.model, "openai/gpt-oss-120b");
+    assert.equal(loaded.providers.openai.model, "gpt-4o-mini");
+    assert.equal(loaded.providers.openrouter.model, "openai/gpt-oss-20b");
   });
 });
 
@@ -132,5 +134,68 @@ test("switching provider restores the saved model for that provider", async () =
     assert.equal(updated.provider.model, "openai/gpt-oss-120b");
     assert.equal(updated.providers.gemini.model, "models/gemini-2.5-pro");
     assert.equal(updated.providers.groq.model, "openai/gpt-oss-120b");
+    assert.equal(updated.providers.openai.model, "gpt-4o-mini");
+  });
+});
+
+test("switching to openai restores its saved model", async () => {
+  await withTempAppData(async () => {
+    await saveConfig(createConfig({
+      provider: {
+        name: "gemini",
+        model: "models/gemini-2.5-pro",
+        apiKey: "gemini-secret"
+      },
+      providers: {
+        gemini: {
+          model: "models/gemini-2.5-pro"
+        },
+        openai: {
+          model: "gpt-5-mini"
+        }
+      }
+    }));
+
+    const updated = await updateConfigValue("provider.name", "openai");
+
+    assert.equal(updated.provider.name, "openai");
+    assert.equal(updated.provider.model, "gpt-5-mini");
+    assert.equal(updated.providers.gemini.model, "models/gemini-2.5-pro");
+    assert.equal(updated.providers.openai.model, "gpt-5-mini");
+  });
+});
+
+test("loadConfig backfills provider profiles for older config files", async () => {
+  await withTempAppData(async () => {
+    const configPath = getConfigPath();
+
+    await fs.mkdir(path.dirname(configPath), { recursive: true });
+    await fs.writeFile(configPath, `${JSON.stringify({
+      mode: "balanced",
+      provider: {
+        name: "gemini",
+        model: "models/gemini-2.5-flash"
+      },
+      shell: "powershell",
+      privacy: {
+        maskSecrets: true,
+        sendHistory: true
+      },
+      history: {
+        historyLimit: 20
+      },
+      safety: {
+        allowlist: [],
+        warnlist: [],
+        denylist: []
+      }
+    }, null, 2)}\n`, "utf8");
+
+    const loaded = await loadConfig();
+
+    assert.equal(loaded.providers.gemini.model, "models/gemini-2.5-flash");
+    assert.equal(loaded.providers.groq.model, "openai/gpt-oss-20b");
+    assert.equal(loaded.providers.openai.model, "gpt-4o-mini");
+    assert.equal(loaded.providers.openrouter.model, "openai/gpt-oss-20b");
   });
 });

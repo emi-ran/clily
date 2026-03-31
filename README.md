@@ -17,11 +17,12 @@ CLI command: `clily`
 
 ## Features
 
-- Gemini and Groq provider support
+- Gemini, Groq, OpenAI, and OpenRouter provider support
 - Interactive setup wizard
 - Safety modes: `safe`, `balanced`, `auto`
 - Local `allowlist`, `warnlist`, and `denylist`
 - Encrypted local API key storage
+- Setup validates provider API keys before saving them
 - Config management from the CLI
 - Config health check with `clily config doctor`
 - Terminal UI with readable previews and confirmations
@@ -47,6 +48,8 @@ Run setup first:
 ```bash
 clily --setup
 ```
+
+Setup reuses saved provider keys and models, validates API keys with the selected provider, and fetches live model lists when available.
 
 Then try a few prompts:
 
@@ -129,15 +132,27 @@ Note: encrypted local storage is safer than plaintext config, but it is not an O
 
 ### Gemini
 
-- Uses `@google/genai`
+- Uses `@ai-sdk/google` for generation and `@google/genai` for live model listing
 - Lists available Gemini models during setup
-- Uses structured output for command generation
+- Falls back safely if structured output is imperfect
 
 ### Groq
 
-- Uses `groq-sdk`
+- Uses `@ai-sdk/groq`
 - Lists available Groq models during setup
 - Works best today with `openai/gpt-oss-20b` and `openai/gpt-oss-120b`
+
+### OpenAI
+
+- Uses `@ai-sdk/openai`
+- Lists available OpenAI models during setup
+- Defaults to `gpt-4o-mini`
+
+### OpenRouter
+
+- Uses `@openrouter/ai-sdk-provider`
+- Lists available OpenRouter models during setup
+- Reuses the same command generation flow as the other providers
 
 ## Documentation
 

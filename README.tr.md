@@ -17,11 +17,12 @@ CLI komutu: `clily`
 
 ## Özellikler
 
-- Gemini ve Groq provider desteği
+- Gemini, Groq, OpenAI ve OpenRouter provider desteği
 - İnteraktif setup wizard
 - Güvenlik modları: `safe`, `balanced`, `auto`
 - Yerel `allowlist`, `warnlist`, `denylist`
 - Şifrelenmiş yerel API key saklama
+- Setup sırasında provider API key doğrulama
 - CLI üzerinden config yönetimi
 - `clily config doctor` ile config sağlık kontrolü
 - Daha okunur terminal önizlemesi ve onay akışı
@@ -47,6 +48,8 @@ npm install -g @emiran/clily
 ```bash
 clily --setup
 ```
+
+Setup kayıtlı provider key ve modellerini yeniden kullanır, API key'i seçilen provider ile doğrular ve mümkünse canlı model listesi getirir.
 
 Sonra deneyebilirsin:
 
@@ -129,15 +132,27 @@ Not: şifrelenmiş yerel saklama plaintext config'den daha iyidir, ama henüz OS
 
 ### Gemini
 
-- `@google/genai` kullanır
+- komut üretiminde `@ai-sdk/google`, canlı model listelemede `@google/genai` kullanır
 - setup sırasında Gemini modellerini listeler
-- komut üretiminde structured output kullanır
+- structured output bozulursa güvenli fallback uygular
 
 ### Groq
 
-- `groq-sdk` kullanır
+- `@ai-sdk/groq` kullanır
 - setup sırasında Groq modellerini listeler
 - şu an en iyi sonuç genelde `openai/gpt-oss-20b` ve `openai/gpt-oss-120b` ile alınır
+
+### OpenAI
+
+- `@ai-sdk/openai` kullanır
+- setup sırasında OpenAI modellerini listeler
+- varsayılan olarak `gpt-4o-mini` ile gelir
+
+### OpenRouter
+
+- `@openrouter/ai-sdk-provider` kullanır
+- setup sırasında OpenRouter modellerini listeler
+- diğer provider'larla aynı komut üretim akışını kullanır
 
 ## Dökümanlar
 

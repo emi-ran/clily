@@ -6,8 +6,8 @@ Use this file to quickly resume work on `clily` in a new chat.
 
 - Core CLI is working
 - Setup wizard is working
-- Gemini provider is integrated with `@google/genai`
-- Groq provider is integrated with `groq-sdk`
+- Provider generation now uses AI SDK adapters with lazy-loaded provider modules
+- Gemini, Groq, OpenAI, and OpenRouter are supported providers
 - Local safety layer is working
 - Config and safety management commands are implemented
 - Last command execution is stored and reused as context
@@ -21,9 +21,12 @@ Use this file to quickly resume work on `clily` in a new chat.
 - `README.md` - user/developer documentation
 - `src/index.ts` - main CLI command tree
 - `src/setup.ts` - setup wizard
-- `src/lib/gemini.ts` - Gemini provider logic
-- `src/lib/groq.ts` - Groq provider logic
+- `src/lib/gemini.ts` - Gemini provider adapter and live model listing
+- `src/lib/groq.ts` - Groq provider adapter and live model listing
+- `src/lib/openai.ts` - OpenAI provider adapter and live model listing
+- `src/lib/openrouter.ts` - OpenRouter provider adapter and live model listing
 - `src/lib/provider.ts` - provider dispatch
+- `src/lib/provider-shared.ts` - shared AI SDK generation flow and prompt/schema helpers
 - `src/lib/safety.ts` - local safety evaluation
 - `src/lib/runner.ts` - run/cancel and command execution
 - `src/lib/history.ts` - shell history loading
@@ -47,7 +50,7 @@ npm run dev -- --help
 
 - natural language to one command
 - provider selection in setup
-- model selection in setup
+- live model selection in setup with retry, API key validation, and explicit fallback messaging
 - safe/balanced/auto modes
 - allowlist/warnlist/denylist evaluation
 - run/cancel prompt
@@ -61,16 +64,16 @@ npm run dev -- --help
 
 ## Recommended Next Work
 
-1. Improve provider model filtering and ranking
-2. Add README polish for npm publish/global install flow
-3. Add keychain-backed secret storage as an optional upgrade path
-4. Add better context selection for prompts like "komutun doğrusunu yaz"
-5. Expand automated test coverage
+1. Improve provider model filtering and ranking, especially for OpenRouter
+2. Add keychain-backed secret storage as an optional upgrade path
+3. Add better context selection for prompts like "komutun doğrusunu yaz"
+4. Expand automated test coverage around provider adapters and setup flow
+5. Recheck npm install visibility after registry propagation if needed
 
 ## Known Issues / Watchouts
 
-- Groq structured output support varies by model
-- Gemini model metadata can include variants that are not ideal for command generation
+- Some providers may still return imperfect structured output, so text fallback remains important
+- OpenRouter model metadata is broad and may need more filtering/ranking over time
 - Shell history behavior can differ by shell and may not always reflect the very latest command instantly
 
 ## Suggested Prompt For The Next Chat

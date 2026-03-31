@@ -8,6 +8,10 @@ function formatProviderName(provider: ProviderName): string {
       return "Gemini";
     case "groq":
       return "Groq";
+    case "openai":
+      return "OpenAI";
+    case "openrouter":
+      return "OpenRouter";
   }
 }
 
@@ -45,4 +49,17 @@ export function toUserFacingProviderError(error: unknown, provider: ProviderName
   }
 
   return new Error(`${providerName} request failed: ${error.message}`);
+}
+
+export function isProviderAuthenticationError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes("authentication failed")
+    || message.includes("api key")
+    || message.includes("unauthorized")
+    || message.includes("status 401")
+    || message.includes("status 403");
 }

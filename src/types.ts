@@ -1,6 +1,6 @@
 export type SafetyMode = "safe" | "balanced" | "auto";
 
-export type ProviderName = "gemini" | "groq";
+export type ProviderName = "gemini" | "groq" | "openai" | "openrouter";
 
 export type ShellName = "powershell" | "cmd" | "bash" | "zsh" | "unknown";
 
