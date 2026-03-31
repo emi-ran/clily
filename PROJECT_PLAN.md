@@ -80,8 +80,9 @@
 - [x] Add `historyLimit` config (default `20`)
 - [x] Disable history when `historyLimit=0`
 - [x] Mask secrets before sending context to provider
+- [x] Add local command history fallback for shells without reliable native history support
 - [ ] Add optional history-aware correction flow
-- [ ] Add support for using previous errors as context
+- [x] Add support for using previous errors as context
 
 ### Phase 7 - Config Management
 
@@ -94,27 +95,27 @@
 
 ### Phase 8 - Packaging and Release
 
-- [ ] Prepare npm package metadata
-- [ ] Add build pipeline
+- [x] Prepare npm package metadata
+- [x] Add build pipeline
 - [ ] Test global install flow
-- [ ] Add README and usage docs
-- [ ] Publish first package version
+- [x] Add README and usage docs
+- [x] Publish first package version
 
 ## MVP Definition
 
-- [ ] `clily --setup` works end-to-end
-- [ ] User can configure Gemini API key and model
+- [x] `clily --setup` works end-to-end
+- [x] User can configure Gemini API key and model
 - [x] `clily "..."` returns one command only
 - [x] Command is validated by local safety layer
 - [x] User can run or cancel from terminal prompt
-- [ ] History can be enabled, limited, or disabled
+- [x] History can be enabled, limited, or disabled
 
 ## Open Questions
 
-- [ ] Where should config live on Windows/macOS/Linux?
-- [ ] Should API keys be stored in config, env vars, or keychain?
+- [x] Where should config live on Windows/macOS/Linux?
+- [x] Should API keys be stored in config, env vars, or keychain?
 - [ ] Should `auto` mode still force confirmation for warnlist commands?
-- [ ] How strict should command parsing be when model output is malformed?
+- [x] How strict should command parsing be when model output is malformed?
 - [ ] How much shell-specific behavior should MVP support?
 
 ## Bugs
@@ -126,6 +127,7 @@ Use this section to track active and resolved issues.
 - [ ] Model filtering may still need tuning as Gemini API capability metadata includes some non-command models that are technically visible via the API.
 - [ ] Groq model filtering is currently name-based and may need tuning once real model usage patterns are clearer.
 - [ ] Groq structured output support varies by model, so non-GPT-OSS models currently fall back to JSON object mode.
+- [ ] Published package install visibility should be rechecked after npm registry propagation with `npm view @emiran/clily version` and a fresh install test.
 
 ### Resolved
 
@@ -156,6 +158,11 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-31 | OpenCode | Moved provider API keys out of `config.json` into an encrypted local secrets file and added a first automated test suite with `npm run test`. |
 | 2026-03-31 | OpenCode | Removed plaintext API key fallback from `config.json`; config loading now requires encrypted secret storage only. |
 | 2026-03-31 | OpenCode | Added `clily config doctor` to inspect config health, plaintext key mistakes, and encrypted secret availability. |
+| 2026-03-31 | OpenCode | Polished CLI output with shared terminal UI helpers and improved setup, preview, and config presentation. |
+| 2026-03-31 | OpenCode | Added local command history fallback so command context still works when shell-native history is unavailable or limited. |
+| 2026-03-31 | OpenCode | Updated `--run` behavior so low-risk commands in balanced mode can skip confirmation unless warnlist, denylist, or blocked rules apply. |
+| 2026-03-31 | OpenCode | Prepared the package for npm release with scoped metadata, clean builds, `prepack` validation, and release docs including English and Turkish READMEs plus `CONTRIBUTING.md`. |
+| 2026-03-31 | OpenCode | Switched the package scope to `@emiran` after confirming the npm account name and published the first public package version. |
 
 ## Notes
 

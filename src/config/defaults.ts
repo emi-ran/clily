@@ -6,6 +6,14 @@ export const defaultConfig: ClilyConfig = {
     name: "gemini",
     model: "models/gemini-2.5-flash"
   },
+  providers: {
+    gemini: {
+      model: "models/gemini-2.5-flash"
+    },
+    groq: {
+      model: "openai/gpt-oss-20b"
+    }
+  },
   shell: "unknown",
   privacy: {
     maskSecrets: true,

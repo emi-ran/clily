@@ -3,7 +3,8 @@ import { defaultConfig } from "./defaults.js";
 import { getConfigDir, getConfigPath, getSecretsPath } from "./paths.js";
 import { getProviderApiKey, setProviderApiKey } from "./secrets.js";
 import { configSchema } from "./schema.js";
-import type { ClilyConfig } from "../types.js";
+import type { ConfigSchema } from "./schema.js";
+import type { ClilyConfig, ProviderProfiles } from "../types.js";
 
 export interface ConfigDoctorReport {
   configPath: string;
@@ -17,6 +18,10 @@ export interface ConfigDoctorReport {
   apiKeyConfigured: boolean;
   issues: string[];
 }
+
+type NormalizableConfig = Omit<ClilyConfig, "providers"> & {
+  providers?: ProviderProfiles;
+};
 
 type ConfigPathKey =
   | "mode"
@@ -94,25 +99,39 @@ export async function loadConfig(): Promise<ClilyConfig> {
     throw new Error("Plaintext provider.apiKey in config.json is no longer supported. Run `clily setup` or `clily config set provider.apiKey <value>`.");
   }
 
-  const parsed = configSchema.parse(parsedJson);
+  const parsed = normalizeConfig(configSchema.parse(parsedJson));
   return attachProviderApiKey(parsed);
 }
 
 export async function saveConfig(config: ClilyConfig): Promise<void> {
-  if (config.provider.apiKey) {
-    await setProviderApiKey(config.provider.name, config.provider.apiKey);
+  const normalized = normalizeConfig(config);
+
+  if (normalized.provider.apiKey) {
+    await setProviderApiKey(normalized.provider.name, normalized.provider.apiKey);
   }
 
-  await writeConfigFile(configSchema.parse(stripApiKey(config)));
+  await writeConfigFile(configSchema.parse(stripApiKey(normalized)));
 }
 
 export function createConfig(overrides: Partial<ClilyConfig> = {}): ClilyConfig {
-  return {
+  return normalizeConfig({
     ...defaultConfig,
     ...overrides,
     provider: {
       ...defaultConfig.provider,
       ...overrides.provider
+    },
+    providers: {
+      ...defaultConfig.providers,
+      ...overrides.providers,
+      gemini: {
+        ...defaultConfig.providers.gemini,
+        ...overrides.providers?.gemini
+      },
+      groq: {
+        ...defaultConfig.providers.groq,
+        ...overrides.providers?.groq
+      }
     },
     privacy: {
       ...defaultConfig.privacy,
@@ -126,7 +145,7 @@ export function createConfig(overrides: Partial<ClilyConfig> = {}): ClilyConfig 
       ...defaultConfig.safety,
       ...overrides.safety
     }
-  };
+  });
 }
 
 export async function requireConfig(): Promise<ClilyConfig> {
@@ -146,10 +165,12 @@ export async function updateConfigValue(path: ConfigPathKey, value: string): Pro
       break;
     case "provider.name":
       config.provider.name = value as ClilyConfig["provider"]["name"];
+      config.provider.model = config.providers[config.provider.name].model;
       config.provider.apiKey = await getProviderApiKey(config.provider.name);
       break;
     case "provider.model":
       config.provider.model = value;
+      config.providers[config.provider.name].model = value;
       break;
     case "provider.apiKey":
       config.provider.apiKey = value;
@@ -170,7 +191,7 @@ export async function updateConfigValue(path: ConfigPathKey, value: string): Pro
       throw new Error(`Unsupported config path: ${path}`);
   }
 
-  const validated = configSchema.parse(config);
+  const validated = normalizeConfig(configSchema.parse(config));
   await saveConfig(validated);
   return validated;
 }
@@ -181,7 +202,7 @@ export async function addSafetyPattern(kind: keyof ClilyConfig["safety"], patter
     config.safety[kind].push(pattern);
   }
 
-  const validated = configSchema.parse(config);
+  const validated = normalizeConfig(configSchema.parse(config));
   await saveConfig(validated);
   return validated;
 }
@@ -190,7 +211,7 @@ export async function removeSafetyPattern(kind: keyof ClilyConfig["safety"], pat
   const config = await requireConfig();
   config.safety[kind] = config.safety[kind].filter((entry) => entry !== pattern);
 
-  const validated = configSchema.parse(config);
+  const validated = normalizeConfig(configSchema.parse(config));
   await saveConfig(validated);
   return validated;
 }
@@ -239,7 +260,46 @@ async function attachProviderApiKey(config: ClilyConfig): Promise<ClilyConfig> {
   };
 }
 
-async function writeConfigFile(config: ClilyConfig): Promise<void> {
+function normalizeConfig(config: NormalizableConfig): ClilyConfig {
+  const providers = normalizeProviderProfiles(config.providers, config.provider);
+  const activeProviderName = config.provider.name;
+
+  return {
+    ...config,
+    provider: {
+      ...config.provider,
+      model: providers[activeProviderName].model
+    },
+    providers
+  };
+}
+
+function normalizeProviderProfiles(
+  providers: ClilyConfig["providers"] | undefined,
+  activeProvider: ClilyConfig["provider"]
+): ProviderProfiles {
+  const normalized: ProviderProfiles = {
+    ...defaultConfig.providers,
+    ...providers,
+    gemini: {
+      ...defaultConfig.providers.gemini,
+      ...providers?.gemini
+    },
+    groq: {
+      ...defaultConfig.providers.groq,
+      ...providers?.groq
+    }
+  };
+
+  normalized[activeProvider.name] = {
+    ...normalized[activeProvider.name],
+    model: activeProvider.model
+  };
+
+  return normalized;
+}
+
+async function writeConfigFile(config: ConfigSchema): Promise<void> {
   await fs.mkdir(getConfigDir(), { recursive: true });
   await fs.writeFile(getConfigPath(), `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }

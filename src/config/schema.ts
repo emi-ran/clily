@@ -10,6 +10,14 @@ export const configSchema = z.object({
     name: providerNameSchema,
     model: z.string().min(1)
   }),
+  providers: z.object({
+    gemini: z.object({
+      model: z.string().min(1)
+    }),
+    groq: z.object({
+      model: z.string().min(1)
+    })
+  }).optional(),
   shell: shellNameSchema,
   privacy: z.object({
     maskSecrets: z.boolean(),

@@ -1,6 +1,7 @@
 import { confirm, input, password, select } from "@inquirer/prompts";
 import pc from "picocolors";
-import { createConfig, saveConfig } from "./config/store.js";
+import { getProviderApiKey } from "./config/secrets.js";
+import { configExists, createConfig, loadConfig, saveConfig } from "./config/store.js";
 import { detectShell } from "./lib/detect.js";
 import { filterGenerateContentModels, listGeminiModels } from "./lib/gemini.js";
 import { filterGroqModels, listGroqModels } from "./lib/groq.js";
@@ -110,7 +111,19 @@ async function selectProviderModel(provider: ProviderName, apiKey: string, fallb
   });
 }
 
+async function loadSetupDefaults(): Promise<ClilyConfig> {
+  if (!(await configExists())) {
+    return createConfig({
+      shell: detectShell()
+    });
+  }
+
+  return loadConfig();
+}
+
 export async function runSetup(): Promise<ClilyConfig> {
+  const existingConfig = await loadSetupDefaults();
+
   console.log("");
   console.log(formatPanel("Clily Setup", [
     formatNotice("info", "Configure provider, safety mode, privacy, and context."),
@@ -124,7 +137,7 @@ export async function runSetup(): Promise<ClilyConfig> {
       { name: "Gemini", value: "gemini", description: "Google Gemini Developer API" },
       { name: "Groq", value: "groq", description: "Groq OpenAI-compatible API" }
     ],
-    default: "gemini"
+    default: existingConfig.provider.name
   });
 
   const mode = await select<SafetyMode>({
@@ -134,17 +147,33 @@ export async function runSetup(): Promise<ClilyConfig> {
       { name: "Balanced", value: "balanced", description: describeMode("balanced") },
       { name: "Auto", value: "auto", description: describeMode("auto") }
     ],
-    default: "balanced"
+    default: existingConfig.mode
   });
 
   const providerDefaults = getProviderDefaults(provider);
+  const savedApiKey = await getProviderApiKey(provider);
+  const defaultModel = existingConfig.providers[provider].model || providerDefaults.model;
 
-  const apiKey = await password({
-    message: providerDefaults.apiKeyLabel,
-    mask: "*"
-  });
+  let apiKey = savedApiKey;
+  if (savedApiKey) {
+    const keepSavedApiKey = await confirm({
+      message: `Keep saved ${providerDefaults.apiKeyLabel.toLowerCase()}?`,
+      default: true
+    });
 
-  let model = providerDefaults.model;
+    if (!keepSavedApiKey) {
+      apiKey = undefined;
+    }
+  }
+
+  if (!apiKey) {
+    apiKey = await password({
+      message: providerDefaults.apiKeyLabel,
+      mask: "*"
+    });
+  }
+
+  let model = defaultModel;
   try {
     model = await selectProviderModel(provider, apiKey, model);
   } catch (error) {
@@ -164,17 +193,17 @@ export async function runSetup(): Promise<ClilyConfig> {
 
   const maskSecrets = await confirm({
     message: "Mask secrets before sending context?",
-    default: true
+    default: existingConfig.privacy.maskSecrets
   });
 
   const sendHistory = await confirm({
     message: "Use sanitized shell history as context?",
-    default: true
+    default: existingConfig.privacy.sendHistory
   });
 
   const historyLimitValue = await input({
     message: "History limit (0 disables history)",
-    default: "20",
+    default: String(existingConfig.history.historyLimit),
     validate(value) {
       const parsed = Number.parseInt(value, 10);
       return Number.isInteger(parsed) && parsed >= 0 ? true : "Enter a whole number >= 0";
@@ -182,12 +211,19 @@ export async function runSetup(): Promise<ClilyConfig> {
   });
 
   const config = createConfig({
+    ...existingConfig,
     mode,
     shell: detectShell(),
     provider: {
       name: provider,
       model,
       apiKey
+    },
+    providers: {
+      ...existingConfig.providers,
+      [provider]: {
+        model
+      }
     },
     privacy: {
       maskSecrets,

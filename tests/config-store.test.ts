@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { getConfigPath, getSecretsPath } from "../src/config/paths.ts";
-import { createConfig, loadConfig, saveConfig } from "../src/config/store.ts";
+import { createConfig, loadConfig, saveConfig, updateConfigValue } from "../src/config/store.ts";
 
 async function withTempAppData(run: () => Promise<void>): Promise<void> {
   const previousAppData = process.env.APPDATA;
@@ -78,5 +78,59 @@ test("loadConfig rejects plaintext API keys in config.json", async () => {
       () => loadConfig(),
       /Plaintext provider\.apiKey in config\.json is no longer supported/
     );
+  });
+});
+
+test("saveConfig preserves provider-specific model selections", async () => {
+  await withTempAppData(async () => {
+    await saveConfig(createConfig({
+      provider: {
+        name: "groq",
+        model: "openai/gpt-oss-120b",
+        apiKey: "groq-secret"
+      },
+      providers: {
+        gemini: {
+          model: "models/gemini-2.5-pro"
+        },
+        groq: {
+          model: "openai/gpt-oss-120b"
+        }
+      }
+    }));
+
+    const loaded = await loadConfig();
+
+    assert.equal(loaded.provider.name, "groq");
+    assert.equal(loaded.provider.model, "openai/gpt-oss-120b");
+    assert.equal(loaded.providers.gemini.model, "models/gemini-2.5-pro");
+    assert.equal(loaded.providers.groq.model, "openai/gpt-oss-120b");
+  });
+});
+
+test("switching provider restores the saved model for that provider", async () => {
+  await withTempAppData(async () => {
+    await saveConfig(createConfig({
+      provider: {
+        name: "gemini",
+        model: "models/gemini-2.5-pro",
+        apiKey: "gemini-secret"
+      },
+      providers: {
+        gemini: {
+          model: "models/gemini-2.5-pro"
+        },
+        groq: {
+          model: "openai/gpt-oss-120b"
+        }
+      }
+    }));
+
+    const updated = await updateConfigValue("provider.name", "groq");
+
+    assert.equal(updated.provider.name, "groq");
+    assert.equal(updated.provider.model, "openai/gpt-oss-120b");
+    assert.equal(updated.providers.gemini.model, "models/gemini-2.5-pro");
+    assert.equal(updated.providers.groq.model, "openai/gpt-oss-120b");
   });
 });

@@ -19,6 +19,12 @@ export interface ProviderConfig {
   apiKey?: string;
 }
 
+export interface ProviderProfile {
+  model: string;
+}
+
+export type ProviderProfiles = Record<ProviderName, ProviderProfile>;
+
 export interface SafetyLists {
   allowlist: string[];
   warnlist: string[];
@@ -28,6 +34,7 @@ export interface SafetyLists {
 export interface ClilyConfig {
   mode: SafetyMode;
   provider: ProviderConfig;
+  providers: ProviderProfiles;
   shell: ShellName;
   privacy: PrivacyConfig;
   history: HistoryConfig;

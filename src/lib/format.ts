@@ -9,6 +9,8 @@ export function formatConfig(config: ClilyConfig): string {
     formatKeyValue("Provider", pc.white(config.provider.name)),
     ...formatWrappedValue("Model", config.provider.model),
     formatKeyValue("API key", config.provider.apiKey ? pc.green("configured") : pc.red("missing")),
+    ...formatWrappedValue("Gemini model", config.providers.gemini.model),
+    ...formatWrappedValue("Groq model", config.providers.groq.model),
     formatKeyValue("Shell", pc.white(config.shell)),
     formatKeyValue("Mask secrets", pc.white(String(config.privacy.maskSecrets))),
     formatKeyValue("Send history", pc.white(String(config.privacy.sendHistory))),
