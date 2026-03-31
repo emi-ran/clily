@@ -166,6 +166,7 @@ Record notable edits here so a future session can quickly resume.
 | 2026-03-31 | OpenCode | Reworked provider generation around AI SDK adapters with lazy-loaded Gemini, Groq, and OpenRouter support plus provider-specific saved model defaults in setup. |
 | 2026-03-31 | OpenCode | Added OpenAI as a first-class provider with live model listing, setup support, and provider-specific saved model defaults. |
 | 2026-03-31 | OpenCode | Improved setup UX with placeholder-style saved API keys, select-based boolean prompts, and provider API key validation before falling back on models. |
+| 2026-03-31 | OpenCode | Added near-JSON repair for malformed provider text responses and kept the related publish cleanup changes (`*.tgz` ignore, no source maps) as unreleased local follow-up work for the next publish. |
 
 ## Notes
 

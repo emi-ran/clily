@@ -61,6 +61,32 @@ function extractJsonObject(text: string): string {
   return trimmed.slice(firstBrace, lastBrace + 1);
 }
 
+function repairNearJson(text: string): string {
+  return text
+    .replace(/```(?:json)?/gi, "")
+    .replace(/([{,]\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/g, "$1\"$2\":")
+    .replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, value: string) => {
+      const normalized = value.replace(/\"/g, '"').replace(/"/g, '\\"');
+      return `"${normalized}"`;
+    })
+    .replace(/,\s*([}\]])/g, "$1")
+    .trim();
+}
+
+export function parseCommandResultText(text: string): unknown {
+  const extracted = extractJsonObject(text);
+
+  if (!extracted) {
+    throw new SyntaxError("Empty JSON response.");
+  }
+
+  try {
+    return JSON.parse(extracted);
+  } catch {
+    return JSON.parse(repairNearJson(extracted));
+  }
+}
+
 export async function generateCommandWithModel(options: {
   model: Parameters<typeof generateObject>[0]["model"];
   providerLabel: string;
@@ -92,11 +118,10 @@ export async function generateCommandWithModel(options: {
       providerOptions: options.providerOptions
     });
 
-    const text = extractJsonObject(result.text);
-    if (!text) {
+    if (!result.text.trim()) {
       throw new Error(`${options.providerLabel} returned an empty response.`);
     }
 
-    return normalizeCommandResult(JSON.parse(text), options.context, options.providerLabel);
+    return normalizeCommandResult(parseCommandResultText(result.text), options.context, options.providerLabel);
   }
 }

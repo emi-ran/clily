@@ -14,6 +14,8 @@ Use this file to quickly resume work on `clily` in a new chat.
 - API keys are stored in an encrypted local secrets file
 - Basic test setup is now available via `npm run test`
 - Plaintext `provider.apiKey` in `config.json` is intentionally rejected
+- There are unpublished local changes for malformed JSON recovery, `.tgz` gitignore cleanup, and source map removal from published output
+- `0.1.1` is still the next intended release version and has not been published yet
 
 ## Important Files
 
@@ -61,14 +63,15 @@ npm run dev -- --help
 - `safety allow|warn|deny list|add|remove`
 - encrypted provider secret storage
 - basic unit tests for config storage, safety, and command normalization
+- malformed near-JSON provider responses are repaired before final parse when possible
 
 ## Recommended Next Work
 
-1. Improve provider model filtering and ranking, especially for OpenRouter
-2. Add keychain-backed secret storage as an optional upgrade path
-3. Add better context selection for prompts like "komutun doğrusunu yaz"
-4. Expand automated test coverage around provider adapters and setup flow
-5. Recheck npm install visibility after registry propagation if needed
+1. Commit and later publish the still-unreleased local changes (`.gitignore`, `tsconfig.json`, `src/lib/provider-shared.ts`, `tests/provider-shared.test.ts`)
+2. Improve provider model filtering and ranking, especially for OpenRouter
+3. Add keychain-backed secret storage as an optional upgrade path
+4. Add better context selection for prompts like "komutun doğrusunu yaz"
+5. Expand automated test coverage around provider adapters and setup flow
 
 ## Known Issues / Watchouts
 
