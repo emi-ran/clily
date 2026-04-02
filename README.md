@@ -4,6 +4,8 @@ English | [Türkçe](README.tr.md)
 
 `clily` turns natural language into a single shell command, checks it against local safety rules, and lets you run or cancel it.
 
+![Clily command preview and run flow](assets/preview-run.png)
+
 NPM package: `@emiran/clily`
 CLI command: `clily`
 
@@ -21,8 +23,7 @@ CLI command: `clily`
 - Interactive setup wizard
 - Safety modes: `safe`, `balanced`, `auto`
 - Local `allowlist`, `warnlist`, and `denylist`
-- Encrypted local API key storage
-- Setup validates provider API keys before saving them
+- Secure local API key storage
 - Config management from the CLI
 - Config health check with `clily config doctor`
 - Terminal UI with readable previews and confirmations
@@ -37,6 +38,8 @@ Clily detects your current shell and asks the model for shell-appropriate comman
 
 ## Install
 
+Requirements: Node.js `>=20.11.0`
+
 ```bash
 npm install -g @emiran/clily
 ```
@@ -49,7 +52,13 @@ Run setup first:
 clily --setup
 ```
 
-Setup reuses saved provider keys and models, validates API keys with the selected provider, and fetches live model lists when available.
+You can also run setup again later with:
+
+```bash
+clily setup
+```
+
+![Clily setup flow](assets/setup-flow.png)
 
 Then try a few prompts:
 
@@ -65,13 +74,15 @@ If local rules allow it, you can also run directly:
 clily "show Node.js version" --run
 ```
 
+`--run` tells Clily to execute the generated command when your safety mode allows it.
+
 ## How It Works
 
 1. You write a natural-language request.
 2. Clily asks the selected model for one shell command.
 3. The command is checked against local safety rules.
 4. Clily shows a preview with command, risk, and reason.
-5. You choose `Run` or `Cancel` unless your mode allows auto-run.
+5. Clily asks for confirmation or runs it directly, depending on your mode.
 
 ## Safety Model
 
@@ -85,7 +96,7 @@ Safety modes:
 
 - `safe`: always ask before running
 - `balanced`: allow trusted commands to auto-run, confirm others
-- `auto`: run directly unless blocked locally
+- `auto`: run commands without confirmation unless a local rule blocks them
 
 Manage rules from the CLI:
 
@@ -110,49 +121,33 @@ clily config set provider.model openai/gpt-oss-20b
 clily config set provider.apiKey YOUR_KEY
 ```
 
-`clily config doctor` checks whether:
+`clily config doctor` checks for common setup, config, and API key problems.
 
-- config exists
-- encrypted secret storage exists
-- config is valid
-- plaintext API keys were written by mistake
-- the selected provider has an encrypted API key
+![Clily config overview](assets/config-overview.png)
 
 ## Privacy And Secret Storage
 
-- API keys are not stored in `config.json`
-- provider keys are stored in a separate encrypted local file
 - secret-like values can be masked before context is sent to a provider
 - shell history can be enabled, limited, or disabled
 - the last command result can be reused as local context
-
-Note: encrypted local storage is safer than plaintext config, but it is not an OS keychain yet.
 
 ## Providers
 
 ### Gemini
 
-- Uses `@ai-sdk/google` for generation and `@google/genai` for live model listing
-- Lists available Gemini models during setup
-- Falls back safely if structured output is imperfect
+- Model selection is available during setup
 
 ### Groq
 
-- Uses `@ai-sdk/groq`
-- Lists available Groq models during setup
 - Works best today with `openai/gpt-oss-20b` and `openai/gpt-oss-120b`
 
 ### OpenAI
 
-- Uses `@ai-sdk/openai`
-- Lists available OpenAI models during setup
 - Defaults to `gpt-4o-mini`
 
 ### OpenRouter
 
-- Uses `@openrouter/ai-sdk-provider`
-- Lists available OpenRouter models during setup
-- Reuses the same command generation flow as the other providers
+- Model selection is available during setup
 
 ## Documentation
 

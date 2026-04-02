@@ -4,6 +4,8 @@
 
 `clily`, doğal dille yazdığın isteği tek bir shell komutuna dönüştürür, komutu yerel güvenlik kurallarından geçirir ve sonra çalıştırıp çalıştırmamayı sana bırakır.
 
+![Clily komut önizleme ve çalıştırma akışı](assets/preview-run.png)
+
 NPM paket adı: `@emiran/clily`
 CLI komutu: `clily`
 
@@ -21,8 +23,7 @@ CLI komutu: `clily`
 - İnteraktif setup wizard
 - Güvenlik modları: `safe`, `balanced`, `auto`
 - Yerel `allowlist`, `warnlist`, `denylist`
-- Şifrelenmiş yerel API key saklama
-- Setup sırasında provider API key doğrulama
+- Güvenli yerel API key saklama
 - CLI üzerinden config yönetimi
 - `clily config doctor` ile config sağlık kontrolü
 - Daha okunur terminal önizlemesi ve onay akışı
@@ -37,6 +38,8 @@ Clily aktif shell'i algılar ve modele shell'e uygun komut istemeye çalışır.
 
 ## Kurulum
 
+Gereksinim: Node.js `>=20.11.0`
+
 ```bash
 npm install -g @emiran/clily
 ```
@@ -49,7 +52,13 @@ npm install -g @emiran/clily
 clily --setup
 ```
 
-Setup kayıtlı provider key ve modellerini yeniden kullanır, API key'i seçilen provider ile doğrular ve mümkünse canlı model listesi getirir.
+İstersen setup'ı daha sonra tekrar şu komutla da açabilirsin:
+
+```bash
+clily setup
+```
+
+![Clily setup akışı](assets/setup-flow.png)
 
 Sonra deneyebilirsin:
 
@@ -65,13 +74,15 @@ Yerel kurallar izin veriyorsa doğrudan çalıştırmayı da kullanabilirsin:
 clily "node sürümünü göster" --run
 ```
 
+`--run`, güvenlik modun izin veriyorsa üretilen komutu çalıştırır.
+
 ## Nasıl Çalışır?
 
 1. Doğal dilde isteğini yazarsın.
 2. Clily seçili modele tek bir shell komutu ürettirir.
 3. Üretilen komut yerel güvenlik kurallarından geçer.
 4. Komut, risk ve gerekçe ile birlikte önizleme gösterilir.
-5. Moduna göre `Run` veya `Cancel` seçersin.
+5. Moduna göre onay ister veya komutu doğrudan çalıştırır.
 
 ## Güvenlik Modeli
 
@@ -85,7 +96,7 @@ Güvenlik modları:
 
 - `safe`: her zaman sor
 - `balanced`: güvenilenleri otomatik çalıştır, diğerlerini sor
-- `auto`: yerelde bloklanmadıysa direkt çalıştır
+- `auto`: yerel bir kural engellemedikçe onay istemeden çalıştır
 
 Örnek kural yönetimi:
 
@@ -110,51 +121,35 @@ clily config set provider.model openai/gpt-oss-20b
 clily config set provider.apiKey YOUR_KEY
 ```
 
-`clily config doctor` şu kontrolleri yapar:
+`clily config doctor`, kurulum, config ve API key ile ilgili yaygın sorunları kontrol eder.
 
-- config var mı
-- şifrelenmiş secret storage var mı
-- config geçerli mi
-- yanlışlıkla plaintext API key yazılmış mı
-- seçili provider için şifrelenmiş API key var mı
+![Clily config görünümü](assets/config-overview.png)
 
 ## Gizlilik ve Secret Storage
 
-- API key'ler `config.json` içinde tutulmaz
-- provider key'leri ayrı şifrelenmiş yerel dosyada tutulur
 - secret benzeri değerler modele gitmeden önce maskelenebilir
 - shell history açılabilir, sınırlanabilir veya kapatılabilir
 - son komut sonucu yerel bağlam olarak tekrar kullanılabilir
-
-Not: şifrelenmiş yerel saklama plaintext config'den daha iyidir, ama henüz OS keychain değildir.
 
 ## Provider'lar
 
 ### Gemini
 
-- komut üretiminde `@ai-sdk/google`, canlı model listelemede `@google/genai` kullanır
-- setup sırasında Gemini modellerini listeler
-- structured output bozulursa güvenli fallback uygular
+- setup sırasında model seçimi yapılabilir
 
 ### Groq
 
-- `@ai-sdk/groq` kullanır
-- setup sırasında Groq modellerini listeler
 - şu an en iyi sonuç genelde `openai/gpt-oss-20b` ve `openai/gpt-oss-120b` ile alınır
 
 ### OpenAI
 
-- `@ai-sdk/openai` kullanır
-- setup sırasında OpenAI modellerini listeler
 - varsayılan olarak `gpt-4o-mini` ile gelir
 
 ### OpenRouter
 
-- `@openrouter/ai-sdk-provider` kullanır
-- setup sırasında OpenRouter modellerini listeler
-- diğer provider'larla aynı komut üretim akışını kullanır
+- setup sırasında model seçimi yapılabilir
 
-## Dökümanlar
+## Dokümanlar
 
 - [English README](README.md)
 - [Contributing Guide](CONTRIBUTING.md)
