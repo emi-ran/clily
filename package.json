@@ -1,6 +1,6 @@
 {
   "name": "@emiran/clily",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI that turns natural language into safer shell commands",
   "type": "module",
   "main": "dist/index.js",

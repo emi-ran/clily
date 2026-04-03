@@ -44,6 +44,9 @@ Requirements: Node.js `>=20.11.0`
 npm install -g @emiran/clily
 ```
 
+Clily may occasionally check whether a newer npm version is available.
+Disable this with `CLILY_DISABLE_UPDATE_CHECK=1`.
+
 ## Quick Start
 
 Run setup first:

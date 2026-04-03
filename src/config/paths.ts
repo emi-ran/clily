@@ -26,3 +26,7 @@ export function getSecretsPath(): string {
 export function getCommandHistoryPath(): string {
   return path.join(getConfigDir(), "command-history.log");
 }
+
+export function getUpdateStatePath(): string {
+  return path.join(getConfigDir(), "update-state.json");
+}

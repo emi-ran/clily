@@ -19,6 +19,7 @@ import { printCommandPreview, runCommand, shouldRunCommand } from "./lib/runner.
 import { evaluateSafety } from "./lib/safety.js";
 import { loadSessionContext, saveLastExecution } from "./lib/session.js";
 import { formatNotice } from "./lib/ui.js";
+import { maybePrintUpdateNotification, refreshUpdateStateInBackground } from "./lib/update.js";
 import { runSetup } from "./setup.js";
 import type { ClilyConfig } from "./types.js";
 
@@ -136,6 +137,9 @@ program
 
     await handlePrompt(request, options.run ?? false);
   });
+
+await maybePrintUpdateNotification();
+refreshUpdateStateInBackground();
 
 program.parseAsync(process.argv).catch((error: unknown) => {
   if (error instanceof Error) {

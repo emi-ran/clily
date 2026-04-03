@@ -44,6 +44,9 @@ Gereksinim: Node.js `>=20.11.0`
 npm install -g @emiran/clily
 ```
 
+Clily, zaman zaman npm üzerinde daha yeni bir sürüm olup olmadığını kontrol edebilir.
+Bunu kapatmak için `CLILY_DISABLE_UPDATE_CHECK=1` kullanabilirsin.
+
 ## Hızlı Başlangıç
 
 İlk önce setup çalıştır:

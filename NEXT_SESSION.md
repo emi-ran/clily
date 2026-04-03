@@ -14,8 +14,7 @@ Use this file to quickly resume work on `clily` in a new chat.
 - API keys are stored in an encrypted local secrets file
 - Basic test setup is now available via `npm run test`
 - Plaintext `provider.apiKey` in `config.json` is intentionally rejected
-- There are unpublished local changes for malformed JSON recovery, `.tgz` gitignore cleanup, and source map removal from published output
-- `0.1.1` is still the next intended release version and has not been published yet
+- A cached npm update check now runs in the background and can be disabled with `CLILY_DISABLE_UPDATE_CHECK=1`
 
 ## Important Files
 
@@ -33,6 +32,7 @@ Use this file to quickly resume work on `clily` in a new chat.
 - `src/lib/runner.ts` - run/cancel and command execution
 - `src/lib/history.ts` - shell history loading
 - `src/lib/session.ts` - last execution capture
+- `src/lib/update.ts` - cached npm update check and notice formatting
 - `src/config/store.ts` - config load/save/update logic
 - `src/config/secrets.ts` - encrypted API key storage
 
@@ -62,16 +62,17 @@ npm run dev -- --help
 - `config set <path> <value>`
 - `safety allow|warn|deny list|add|remove`
 - encrypted provider secret storage
+- cached npm update notification with env-based disable switch
 - basic unit tests for config storage, safety, and command normalization
 - malformed near-JSON provider responses are repaired before final parse when possible
 
 ## Recommended Next Work
 
-1. Commit and later publish the still-unreleased local changes (`.gitignore`, `tsconfig.json`, `src/lib/provider-shared.ts`, `tests/provider-shared.test.ts`)
-2. Improve provider model filtering and ranking, especially for OpenRouter
-3. Add keychain-backed secret storage as an optional upgrade path
-4. Add better context selection for prompts like "komutun doğrusunu yaz"
-5. Expand automated test coverage around provider adapters and setup flow
+1. Improve provider model filtering and ranking, especially for OpenRouter
+2. Add keychain-backed secret storage as an optional upgrade path
+3. Add better context selection for prompts like "komutun doğrusunu yaz"
+4. Expand automated test coverage around provider adapters and setup flow
+5. Consider exposing update-check settings in config if users ask for more control than the env flag
 
 ## Known Issues / Watchouts
 
